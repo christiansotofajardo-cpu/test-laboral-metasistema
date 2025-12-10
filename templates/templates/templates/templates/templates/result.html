@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Resultados preliminares</h2>
+
+<div class="card">
+    <h3>Perfil IPIP-100 (resumen por factor)</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Factor</th>
+                <th>Descripción</th>
+                <th>Puntaje total</th>
+                <th>Promedio (1–5)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for factor, total in scores.items() %}
+            <tr>
+                <td><strong>{{ factor }}</strong></td>
+                <td>{{ factor_labels[factor] }}</td>
+                <td>{{ total }}</td>
+                <td>
+                    {% if avg_scores[factor] is not none %}
+                        {{ avg_scores[factor] }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Textos discursivos</h3>
+
+    <h4>Texto funcional</h4>
+    <p>{{ texto_funcional | e }}</p>
+
+    <h4>Texto situacional</h4>
+    <p>{{ texto_situacional | e }}</p>
+</div>
+
+<div class="card">
+    <h3>Análisis discursivo preliminar</h3>
+    <p>{{ analisis_discursivo.comentario_general }}</p>
+
+    <ul>
+        <li>Largo texto funcional: {{ analisis_discursivo.texto_funcional_length }} palabras.</li>
+        <li>Largo texto situacional: {{ analisis_discursivo.texto_situacional_length }} palabras.</li>
+    </ul>
+
+    <p style="font-size:0.9rem; color:#6b7280;">
+        En la integración final se mostrarán los índices TRUNAJOD reales
+        (coherencia, riqueza léxica, organización, tono emocional, etc.).
+    </p>
+</div>
+
+<a href="/test" class="btn btn-primary">Volver a aplicar</a>
+
+{% endblock %}
