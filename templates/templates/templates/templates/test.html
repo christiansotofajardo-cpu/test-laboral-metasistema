@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Cuestionario IPIP-100</h2>
+
+<p>
+Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.
+</p>
+
+<form method="post" action="/test">
+
+    <div class="card">
+        <h3>Parte 1 – Cuestionario de personalidad</h3>
+
+        {% for item in items %}
+        <div class="item-row">
+            <label for="{{ item.id }}">
+                {{ loop.index }}. {{ item.text }}
+            </label><br>
+
+            <select name="{{ item.id }}" id="{{ item.id }}" required>
+                <option value="">Selecciona una opción</option>
+                <option value="1">1 - Muy en desacuerdo</option>
+                <option value="2">2 - En desacuerdo</option>
+                <option value="3">3 - Ni de acuerdo ni en desacuerdo</option>
+                <option value="4">4 - De acuerdo</option>
+                <option value="5">5 - Muy de acuerdo</option>
+            </select>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Parte 2 – Tarea discursiva funcional</h3>
+        <p>
+            <strong>Instrucción:</strong> redacta un correo breve (6–8 líneas) dirigido a tu jefatura explicando un problema laboral,
+            cómo afecta el trabajo y qué propones para resolverlo.
+        </p>
+        <textarea name="texto_funcional" required></textarea>
+    </div>
+
+    <div class="card">
+        <h3>Parte 3 – Tarea discursiva situacional</h3>
+        <p>
+            <strong>Instrucción:</strong> describe una situación difícil que hayas enfrentado en un trabajo anterior, 
+            cómo la resolviste, qué aprendiste y qué harías distinto hoy.
+        </p>
+        <textarea name="texto_situacional" required></textarea>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Enviar respuestas</button>
+
+</form>
+
+{% endblock %}
