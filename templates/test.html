@@ -4,16 +4,71 @@
     <meta charset="UTF-8">
     <title>Test Laboral MetaSistema</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        h1 { color: #2c3e50; }
-        h2 { color: #34495e; margin-top: 30px; }
-        .item { margin-bottom: 20px; }
-        .label { font-weight: bold; }
-        select { margin-top: 5px; }
-        textarea { width: 100%; height: 150px; margin-top: 10px; }
-        button { 
-            margin-top: 25px; padding: 10px 20px; 
-            font-size: 16px; cursor: pointer;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f7fa;
+        }
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #333;
+        }
+        .section-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+        .item {
+            margin-bottom: 22px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: block;
+        }
+        select {
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #9ca3af;
+            width: 260px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #9ca3af;
+            background: #f9fafb;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 26px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #1d4ed8;
         }
     </style>
 </head>
@@ -24,30 +79,36 @@
 
 <form method="post" action="/test">
 
-    <h2>Parte 1 – Cuestionario de personalidad</h2>
-    <p>Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.</p>
+    <div class="section-box">
+        <h2>Parte 1 – Cuestionario de personalidad</h2>
+        <p>Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.</p>
 
-    {% for item in items %}
-    <div class="item">
-        <div class="label">{{ loop.index }}. {{ item.text }}</div>
-        <select name="{{ item.id }}" required>
-            <option value="">Selecciona una opción</option>
-            <option value="1">1 - Muy en desacuerdo</option>
-            <option value="2">2 - En desacuerdo</option>
-            <option value="3">3 - Neutral</option>
-            <option value="4">4 - De acuerdo</option>
-            <option value="5">5 - Muy de acuerdo</option>
-        </select>
+        {% for item in items %}
+        <div class="item">
+            <div class="label">{{ loop.index }}. {{ item.text }}</div>
+            <select name="{{ item.id }}" required>
+                <option value="">Selecciona una opción</option>
+                <option value="1">1 - Muy en desacuerdo</option>
+                <option value="2">2 - En desacuerdo</option>
+                <option value="3">3 - Neutral</option>
+                <option value="4">4 - De acuerdo</option>
+                <option value="5">5 - Muy de acuerdo</option>
+            </select>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 
-    <h2>Parte 2 – Tarea discursiva funcional</h2>
-    <p><strong>Instrucción:</strong> redacta un correo breve (6–8 líneas) dirigido a tu jefatura explicando un problema laboral, cómo afecta el trabajo y qué propones para resolverlo.</p>
-    <textarea name="texto_funcional" placeholder="Escribe aquí tu texto funcional..."></textarea>
+    <div class="section-box">
+        <h2>Parte 2 – Tarea discursiva funcional</h2>
+        <p><strong>Instrucción:</strong> redacta un correo breve (6–8 líneas) dirigido a tu jefatura explicando un problema laboral, cómo afecta el trabajo y qué propones para resolverlo.</p>
+        <textarea name="texto_funcional" placeholder="Escribe aquí tu texto funcional..."></textarea>
+    </div>
 
-    <h2>Parte 3 – Tarea discursiva situacional</h2>
-    <p><strong>Instrucción:</strong> describe una situación difícil que hayas enfrentado en un trabajo anterior, cómo la resolviste, qué aprendiste y qué harías distinto hoy.</p>
-    <textarea name="texto_situacional" placeholder="Escribe aquí tu texto situacional..."></textarea>
+    <div class="section-box">
+        <h2>Parte 3 – Tarea discursiva situacional</h2>
+        <p><strong>Instrucción:</strong> describe una situación difícil que hayas enfrentado en un trabajo anterior, cómo la resolviste, qué aprendiste y qué harías distinto hoy.</p>
+        <textarea name="texto_situacional" placeholder="Escribe aquí tu texto situacional..."></textarea>
+    </div>
 
     <button type="submit">Enviar respuestas</button>
 
