@@ -10,13 +10,6 @@ templates = Jinja2Templates(directory="templates")
 # -----------------------------
 # Definición de ítems IPIP-100
 # -----------------------------
-# Cinco factores:
-# - CON: Responsabilidad / escrupulosidad
-# - NEU: Estabilidad emocional (bajo neuroticismo)
-# - EXT: Extraversión
-# - AGR: Amabilidad / cooperación
-# - OPE: Apertura a la experiencia
-
 IPIP_ITEMS: List[Dict] = [
     # CON – Responsabilidad / escrupulosidad (1–20)
     {"id": "item1", "text": "Planifico mi trabajo con anticipación.", "factor": "CON"},
@@ -156,16 +149,12 @@ async def show_test(request: Request):
 
 @app.post("/test", response_class=HTMLResponse)
 async def submit_test(request: Request):
-
-    # Leer datos del formulario
     form = await request.form()
     form_data = dict(form)
 
-    # Extraer textos discursivos (si el template ya los tiene, se usan; si no, quedan vacíos y no pasa nada)
     texto_funcional = form_data.pop("texto_funcional", "").strip()
     texto_situacional = form_data.pop("texto_situacional", "").strip()
 
-    # Acumuladores por factor
     scores = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
     counts = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
 
@@ -181,7 +170,7 @@ async def submit_test(request: Request):
             scores[factor] += value
             counts[factor] += 1
 
-    # Calcular promedios
+    # Promedios
     avg_scores = {}
     for factor in scores.keys():
         if counts[factor] > 0:
@@ -189,7 +178,7 @@ async def submit_test(request: Request):
         else:
             avg_scores[factor] = None
 
-    # Placeholder análisis TRUNAJOD (no rompe nada aunque el template no lo use)
+    # Placeholder análisis discursivo
     analisis_discursivo = {
         "comentario_general": "Integración con TRUNAJOD pendiente en esta versión.",
         "texto_funcional_length": len(texto_funcional.split()) if texto_funcional else 0,
