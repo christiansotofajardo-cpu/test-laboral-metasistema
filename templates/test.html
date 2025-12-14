@@ -1,118 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Test Laboral MetaSistema</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background: #f5f7fa;
-        }
-        h1 {
-            color: #1e3a8a;
-            margin-bottom: 5px;
-        }
-        h2 {
-            color: #1e40af;
-            margin-top: 30px;
-            margin-bottom: 10px;
-        }
-        p {
-            color: #333;
-        }
-        .section-box {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0px 3px 10px rgba(0,0,0,0.08);
-            margin-bottom: 40px;
-        }
-        .item {
-            margin-bottom: 22px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .label {
-            font-weight: bold;
-            margin-bottom: 6px;
-            display: block;
-        }
-        select {
-            margin-top: 8px;
-            padding: 6px;
-            border-radius: 6px;
-            border: 1px solid #9ca3af;
-            width: 260px;
-        }
-        textarea {
-            width: 100%;
-            height: 150px;
-            margin-top: 10px;
-            padding: 12px;
-            font-size: 14px;
-            border-radius: 8px;
-            border: 1px solid #9ca3af;
-            background: #f9fafb;
-        }
-        button {
-            margin-top: 20px;
-            padding: 12px 26px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #2563eb;
-            color: white;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: #1d4ed8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Test Laboral MetaSistema</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>Test Laboral MetaSistema</h1>
-<p><strong>IPIP-100 + tareas discursivas</strong></p>
+<div class="container">
 
-<form method="post" action="/test">
+  <h1>Test Laboral MetaSistema</h1>
+  <p class="small">IPIP-100 + tareas discursivas</p>
 
-    <div class="section-box">
-        <h2>Parte 1 – Cuestionario de personalidad</h2>
-        <p>Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.</p>
+  <div class="card">
+    <h2>Parte 1 – Cuestionario de personalidad</h2>
+    <p class="small">
+      Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.
+    </p>
 
-        {% for item in items %}
-        <div class="item">
-            <div class="label">{{ loop.index }}. {{ item.text }}</div>
-            <select name="{{ item.id }}" required>
-                <option value="">Selecciona una opción</option>
-                <option value="1">1 - Muy en desacuerdo</option>
-                <option value="2">2 - En desacuerdo</option>
-                <option value="3">3 - Neutral</option>
-                <option value="4">4 - De acuerdo</option>
-                <option value="5">5 - Muy de acuerdo</option>
-            </select>
+    <form method="post">
+
+      {% for item in items %}
+        <div class="card">
+          <strong>{{ loop.index }}. {{ item.text }}</strong><br><br>
+          <select name="{{ item.id }}" required>
+            <option value="">Selecciona una opción</option>
+            <option value="1">Totalmente en desacuerdo</option>
+            <option value="2">En desacuerdo</option>
+            <option value="3">Ni de acuerdo ni en desacuerdo</option>
+            <option value="4">De acuerdo</option>
+            <option value="5">Totalmente de acuerdo</option>
+          </select>
         </div>
-        {% endfor %}
-    </div>
+      {% endfor %}
 
-    <div class="section-box">
-        <h2>Parte 2 – Tarea discursiva funcional</h2>
-        <p><strong>Instrucción:</strong> redacta un correo breve (6–8 líneas) dirigido a tu jefatura explicando un problema laboral, cómo afecta el trabajo y qué propones para resolverlo.</p>
-        <textarea name="texto_funcional" placeholder="Escribe aquí tu texto funcional..."></textarea>
-    </div>
+      <div class="card">
+        <h2>Parte 2 – Producción escrita</h2>
 
-    <div class="section-box">
-        <h2>Parte 3 – Tarea discursiva situacional</h2>
-        <p><strong>Instrucción:</strong> describe una situación difícil que hayas enfrentado en un trabajo anterior, cómo la resolviste, qué aprendiste y qué harías distinto hoy.</p>
-        <textarea name="texto_situacional" placeholder="Escribe aquí tu texto situacional..."></textarea>
-    </div>
+        <p><strong>Texto funcional</strong></p>
+        <textarea name="texto_funcional" rows="6" style="width:100%"></textarea>
 
-    <button type="submit">Enviar respuestas</button>
+        <p><strong>Texto situacional</strong></p>
+        <textarea name="texto_situacional" rows="6" style="width:100%"></textarea>
+      </div>
 
-</form>
+      <button type="submit">Enviar</button>
+
+    </form>
+  </div>
+
+</div>
 
 </body>
 </html>
