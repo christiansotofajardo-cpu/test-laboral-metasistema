@@ -8,50 +8,47 @@
 
 <body>
   <div class="container">
-
     <h1>Test Laboral MetaSistema</h1>
     <p class="small">IPIP-100 + tareas discursivas</p>
 
     <div class="card">
       <h2>Parte 1 – Cuestionario de personalidad</h2>
       <p class="small">
-        Indica en qué medida estás de acuerdo con cada afirmación
-        pensando en tu comportamiento habitual.
+        Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.
       </p>
 
       <form method="post">
 
         {% for item in items %}
-        <div style="margin-bottom:14px;">
-          <strong>{{ loop.index }}. {{ item.text }}</strong><br>
-
+        <div class="card">
+          <p><b>{{ loop.index }}. {{ item.text }}</b></p>
           <select name="{{ item.id }}" required>
             <option value="">Selecciona una opción</option>
-            <option value="1">1 – Muy en desacuerdo</option>
-            <option value="2">2 – En desacuerdo</option>
-            <option value="3">3 – Neutral</option>
-            <option value="4">4 – De acuerdo</option>
-            <option value="5">5 – Muy de acuerdo</option>
+            <option value="1">Muy en desacuerdo</option>
+            <option value="2">En desacuerdo</option>
+            <option value="3">Neutral</option>
+            <option value="4">De acuerdo</option>
+            <option value="5">Muy de acuerdo</option>
           </select>
         </div>
         {% endfor %}
 
-        <div class="card" style="margin-top:20px;">
-          <h2>Parte 2 – Producción escrita</h2>
-
-          <label><strong>Texto funcional</strong></label><br>
-          <textarea name="texto_funcional" rows="6" style="width:100%;"></textarea><br><br>
-
-          <label><strong>Texto situacional</strong></label><br>
-          <textarea name="texto_situacional" rows="6" style="width:100%;"></textarea>
+        <div class="card">
+          <h2>Parte 2 – Producción escrita (funcional)</h2>
+          <textarea name="texto_funcional" rows="6" style="width:100%;" required></textarea>
         </div>
 
-        <br>
-        <button type="submit">Enviar</button>
+        <div class="card">
+          <h2>Parte 3 – Producción escrita (situacional)</h2>
+          <textarea name="texto_situacional" rows="6" style="width:100%;" required></textarea>
+        </div>
+
+        <div class="card">
+          <button type="submit">Enviar evaluación</button>
+        </div>
 
       </form>
     </div>
-
   </div>
 </body>
 </html>
