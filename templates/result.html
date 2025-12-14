@@ -2,124 +2,83 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Resultados — Test Laboral MetaSistema</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
   <div class="container">
 
     <div class="card">
-      <h1>Resultados — Test Laboral MetaSistema</h1>
+      <h1>Resultados</h1>
       <div class="small">
-        IPIP-100 + Producción escrita (TRU-sensible).<br>
-        Nota: esto aún no es MetaSistema interpretativo; es una capa de índices sensibles agrupados con estética MetaSistema.
+        Test Laboral MetaSistema — IPIP-100 + Producción escrita (TRU-sensible)
       </div>
     </div>
 
     <div class="card">
-      <h2>Personalidad (IPIP-100)</h2>
+      <h2>IPIP-100 (resumen)</h2>
 
-      <div class="small">Promedio por factor (1–5)</div>
+      <div class="small">Promedios por factor</div>
       <ul>
-        {% for key, label in factor_labels.items() %}
-          <li>
-            <b>{{ label }}</b>:
-            {% if avg_scores[key] is not none %}
-              {{ avg_scores[key] }}
-            {% else %}
-              —
-            {% endif %}
-          </li>
-        {% endfor %}
+        <li><b>CON</b> ({{ factor_labels["CON"] }}): {{ avg_scores["CON"] }}</li>
+        <li><b>NEU</b> ({{ factor_labels["NEU"] }}): {{ avg_scores["NEU"] }}</li>
+        <li><b>EXT</b> ({{ factor_labels["EXT"] }}): {{ avg_scores["EXT"] }}</li>
+        <li><b>AGR</b> ({{ factor_labels["AGR"] }}): {{ avg_scores["AGR"] }}</li>
+        <li><b>OPE</b> ({{ factor_labels["OPE"] }}): {{ avg_scores["OPE"] }}</li>
       </ul>
     </div>
 
     <div class="card">
-      <h2>Producción escrita</h2>
+      <h2>Producción escrita (TRU-sensible)</h2>
 
-      <h3>Texto funcional</h3>
-      {% if texto_funcional %}
-        <div class="small">{{ texto_funcional }}</div>
-      {% else %}
-        <div class="small">No se ingresó texto funcional.</div>
-      {% endif %}
+      {% set sf = analisis_discursivo["scores_sensibles"]["funcional"] %}
+      {% set ss = analisis_discursivo["scores_sensibles"]["situacional"] %}
+      {% set sg = analisis_discursivo["scores_sensibles"]["global_promedio"] %}
 
-      <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
-
-      <h3>Texto situacional</h3>
-      {% if texto_situacional %}
-        <div class="small">{{ texto_situacional }}</div>
-      {% else %}
-        <div class="small">No se ingresó texto situacional.</div>
-      {% endif %}
-    </div>
-
-    {% set sf = analisis_discursivo["scores_sensibles"]["funcional"] if analisis_discursivo and "scores_sensibles" in analisis_discursivo else None %}
-    {% set ss = analisis_discursivo["scores_sensibles"]["situacional"] if analisis_discursivo and "scores_sensibles" in analisis_discursivo else None %}
-    {% set sg = analisis_discursivo["scores_sensibles"]["global_promedio"] if analisis_discursivo and "scores_sensibles" in analisis_discursivo else None %}
-
-    <div class="card">
-      <h2>TRU-sensible — Scores</h2>
-      <div class="small">
-        Estos scores se calculan a partir de índices como coherencia local (EG), similitud (SM), marcadores discursivos (DM), densidad léxica (SP), MTLD, etc.
-      </div>
-
-      <h3>Global (promedio)</h3>
-      <div class="small">
-        <b>{{ sg if sg is not none else "—" }}</b>
-      </div>
-
-      <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
+      <h3>Score global</h3>
+      <p><b>{{ sg if sg is not none else "—" }}</b></p>
 
       <h3>Funcional</h3>
-      {% if sf %}
-        <ul>
-          <li><b>Coherencia</b>: {{ sf["coherencia"] }}</li>
-          <li><b>Relevancia (proxy)</b>: {{ sf["relevancia"] }}</li>
-          <li><b>Registro</b>: {{ sf["registro"] }}</li>
-          <li><b>Desarrollo</b>: {{ sf["desarrollo"] }}</li>
-          <li><b>Tono (alerta suave)</b>: {{ sf["alerta_emocion"] }}</li>
-          <li><b>Global</b>: {{ sf["global"] }}</li>
-        </ul>
-      {% else %}
-        <div class="small">No hay scores funcionales disponibles.</div>
-      {% endif %}
-
-      <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
+      <ul>
+        <li>Coherencia: <b>{{ sf["coherencia"] }}</b></li>
+        <li>Relevancia: <b>{{ sf["relevancia"] }}</b></li>
+        <li>Registro: <b>{{ sf["registro"] }}</b></li>
+        <li>Desarrollo: <b>{{ sf["desarrollo"] }}</b></li>
+        <li>Tono (alerta suave): <b>{{ sf["alerta_emocion"] }}</b></li>
+        <li>Global funcional: <b>{{ sf["global"] }}</b></li>
+      </ul>
 
       <h3>Situacional</h3>
-      {% if ss %}
-        <ul>
-          <li><b>Coherencia</b>: {{ ss["coherencia"] }}</li>
-          <li><b>Relevancia (proxy)</b>: {{ ss["relevancia"] }}</li>
-          <li><b>Registro</b>: {{ ss["registro"] }}</li>
-          <li><b>Desarrollo</b>: {{ ss["desarrollo"] }}</li>
-          <li><b>Tono (alerta suave)</b>: {{ ss["alerta_emocion"] }}</li>
-          <li><b>Global</b>: {{ ss["global"] }}</li>
-        </ul>
-      {% else %}
-        <div class="small">No hay scores situacionales disponibles.</div>
-      {% endif %}
+      <ul>
+        <li>Coherencia: <b>{{ ss["coherencia"] }}</b></li>
+        <li>Relevancia: <b>{{ ss["relevancia"] }}</b></li>
+        <li>Registro: <b>{{ ss["registro"] }}</b></li>
+        <li>Desarrollo: <b>{{ ss["desarrollo"] }}</b></li>
+        <li>Tono (alerta suave): <b>{{ ss["alerta_emocion"] }}</b></li>
+        <li>Global situacional: <b>{{ ss["global"] }}</b></li>
+      </ul>
+
+      <div class="small">
+        Nota: esto todavía no “prueba MetaSistema”; es agrupación estética y funcional de índices sensibles.
+      </div>
     </div>
 
     <div class="card">
       <h2>Diagnóstico técnico</h2>
+      <div class="small">
+        TRUNAJOD endpoint configurado: <b>{{ analisis_discursivo["meta"]["trunajod_endpoint_configurado"] }}</b><br/>
+        TRUNAJOD ok (funcional): <b>{{ analisis_discursivo["meta"]["trunajod_ok_funcional"] }}</b><br/>
+        TRUNAJOD ok (situacional): <b>{{ analisis_discursivo["meta"]["trunajod_ok_situacional"] }}</b>
+      </div>
 
-      {% if analisis_discursivo and "meta" in analisis_discursivo %}
-        <ul class="small">
-          <li><b>TRUNAJOD endpoint configurado</b>: {{ analisis_discursivo["meta"]["trunajod_endpoint_configurado"] }}</li>
-          <li><b>TRUNAJOD ok (funcional)</b>: {{ analisis_discursivo["meta"]["trunajod_ok_funcional"] }}</li>
-          <li><b>TRUNAJOD ok (situacional)</b>: {{ analisis_discursivo["meta"]["trunajod_ok_situacional"] }}</li>
-        </ul>
-
-        {% if analisis_discursivo["meta"]["trunajod_error_funcional"] or analisis_discursivo["meta"]["trunajod_error_situacional"] %}
-          <pre>{{ analisis_discursivo["meta"] }}</pre>
-        {% endif %}
-      {% else %}
-        <div class="small">No hay información técnica disponible.</div>
+      {% if analisis_discursivo["meta"]["trunajod_error_funcional"] or analisis_discursivo["meta"]["trunajod_error_situacional"] %}
+        <pre>{{ analisis_discursivo["meta"] }}</pre>
       {% endif %}
+    </div>
+
+    <div class="card">
+      <a href="/test">Volver al test</a>
     </div>
 
   </div>
