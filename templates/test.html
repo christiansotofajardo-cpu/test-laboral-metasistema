@@ -5,51 +5,53 @@
   <title>Test Laboral MetaSistema</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
+  <div class="container">
 
-<div class="container">
+    <h1>Test Laboral MetaSistema</h1>
+    <p class="small">IPIP-100 + tareas discursivas</p>
 
-  <h1>Test Laboral MetaSistema</h1>
-  <p class="small">IPIP-100 + tareas discursivas</p>
+    <div class="card">
+      <h2>Parte 1 – Cuestionario de personalidad</h2>
+      <p class="small">
+        Indica en qué medida estás de acuerdo con cada afirmación
+        pensando en tu comportamiento habitual.
+      </p>
 
-  <div class="card">
-    <h2>Parte 1 – Cuestionario de personalidad</h2>
-    <p class="small">
-      Indica en qué medida estás de acuerdo con cada afirmación pensando en tu comportamiento habitual.
-    </p>
+      <form method="post">
 
-    <form method="post">
+        {% for item in items %}
+        <div style="margin-bottom:14px;">
+          <strong>{{ loop.index }}. {{ item.text }}</strong><br>
 
-      {% for item in items %}
-        <div class="card">
-          <strong>{{ loop.index }}. {{ item.text }}</strong><br><br>
           <select name="{{ item.id }}" required>
             <option value="">Selecciona una opción</option>
-            <option value="1">Totalmente en desacuerdo</option>
-            <option value="2">En desacuerdo</option>
-            <option value="3">Ni de acuerdo ni en desacuerdo</option>
-            <option value="4">De acuerdo</option>
-            <option value="5">Totalmente de acuerdo</option>
+            <option value="1">1 – Muy en desacuerdo</option>
+            <option value="2">2 – En desacuerdo</option>
+            <option value="3">3 – Neutral</option>
+            <option value="4">4 – De acuerdo</option>
+            <option value="5">5 – Muy de acuerdo</option>
           </select>
         </div>
-      {% endfor %}
+        {% endfor %}
 
-      <div class="card">
-        <h2>Parte 2 – Producción escrita</h2>
+        <div class="card" style="margin-top:20px;">
+          <h2>Parte 2 – Producción escrita</h2>
 
-        <p><strong>Texto funcional</strong></p>
-        <textarea name="texto_funcional" rows="6" style="width:100%"></textarea>
+          <label><strong>Texto funcional</strong></label><br>
+          <textarea name="texto_funcional" rows="6" style="width:100%;"></textarea><br><br>
 
-        <p><strong>Texto situacional</strong></p>
-        <textarea name="texto_situacional" rows="6" style="width:100%"></textarea>
-      </div>
+          <label><strong>Texto situacional</strong></label><br>
+          <textarea name="texto_situacional" rows="6" style="width:100%;"></textarea>
+        </div>
 
-      <button type="submit">Enviar</button>
+        <br>
+        <button type="submit">Enviar</button>
 
-    </form>
+      </form>
+    </div>
+
   </div>
-
-</div>
-
 </body>
 </html>
