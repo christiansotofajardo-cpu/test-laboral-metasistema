@@ -2,88 +2,113 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Resultados · Test Laboral MetaSistema</title>
+  <title>Resultados – Test Laboral MetaSistema</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Estilos MetaSistema -->
+  <!-- ESTILOS METASISTEMA -->
   <link rel="stylesheet" href="/static/style.css">
-
 </head>
+
 <body>
 
   <div class="container">
 
-    <h1>Resultados del Test Laboral</h1>
+    <h1>Test Laboral MetaSistema</h1>
     <p class="small">
-      Evaluación integrada de personalidad (IPIP-100) y producción escrita.
-      <br>
-      <strong>Fase actual:</strong> índices sensibles de PLN (sin MetaSistema interpretativo).
+      Resultados del perfil de personalidad (IPIP-100) y análisis de producción escrita
+      basado en índices de PLN (TRUNAJOD – capa sensible).
     </p>
 
-    <!-- ========================= -->
-    <!-- RESUMEN DISCURSIVO GLOBAL -->
-    <!-- ========================= -->
-
+    <!-- ===================== -->
+    <!-- BLOQUE IPIP -->
+    <!-- ===================== -->
     <div class="card">
-      <h2>Resumen discursivo global</h2>
+      <h2>Perfil de Personalidad (IPIP-100)</h2>
 
-      {% if analisis_discursivo and analisis_discursivo.scores_sensibles %}
-        <p>
-          <strong>TRU-Sensible Global:</strong>
-          {{ analisis_discursivo.scores_sensibles.global_promedio }}
-        </p>
-      {% else %}
-        <p>No hay análisis discursivo disponible.</p>
-      {% endif %}
+      <ul>
+        {% for factor, score in avg_scores.items() %}
+          <li>
+            <strong>{{ factor_labels[factor] }}:</strong>
+            {{ score if score is not none else "—" }}
+          </li>
+        {% endfor %}
+      </ul>
     </div>
 
-    <!-- ========================= -->
+    <!-- ===================== -->
     <!-- TEXTO FUNCIONAL -->
-    <!-- ========================= -->
-
+    <!-- ===================== -->
     <div class="card">
-      <h2>Texto funcional</h2>
+      <h2>Producción Escrita – Texto Funcional</h2>
 
-      {% set sf = analisis_discursivo.scores_sensibles.funcional %}
+      <p class="small"><strong>Texto:</strong></p>
+      <p>{{ texto_funcional }}</p>
 
-      <p><strong>Coherencia:</strong> {{ sf.coherencia }}</p>
-      <p><strong>Relevancia a la consigna:</strong> {{ sf.relevancia }}</p>
-      <p><strong>Registro profesional:</strong> {{ sf.registro }}</p>
-      <p><strong>Desarrollo estructural:</strong> {{ sf.desarrollo }}</p>
-      <p><strong>Tono emocional (alerta):</strong> {{ sf.alerta_emocion }}</p>
-      <p><strong>Score global:</strong> {{ sf.global }}</p>
-    </div>
-
-    <!-- ========================= -->
-    <!-- TEXTO SITUACIONAL -->
-    <!-- ========================= -->
-
-    <div class="card">
-      <h2>Texto situacional</h2>
-
-      {% set ss = analisis_discursivo.scores_sensibles.situacional %}
-
-      <p><strong>Coherencia:</strong> {{ ss.coherencia }}</p>
-      <p><strong>Relevancia a la consigna:</strong> {{ ss.relevancia }}</p>
-      <p><strong>Registro profesional:</strong> {{ ss.registro }}</p>
-      <p><strong>Desarrollo estructural:</strong> {{ ss.desarrollo }}</p>
-      <p><strong>Tono emocional (alerta):</strong> {{ ss.alerta_emocion }}</p>
-      <p><strong>Score global:</strong> {{ ss.global }}</p>
-    </div>
-
-    <!-- ========================= -->
-    <!-- NOTA METODOLÓGICA -->
-    <!-- ========================= -->
-
-    <div class="card">
-      <h2>Nota metodológica</h2>
       <p class="small">
-        Los puntajes presentados corresponden a una capa de análisis basada en
-        <strong>índices lingüísticos sensibles</strong> (coherencia, similitud semántica,
-        diversidad léxica, control estructural y tono).
-        <br><br>
-        Esta visualización aún <strong>no constituye MetaSistema interpretativo</strong>.
-        La integración MetaSistema se realizará en una fase posterior, una vez validados
-        empíricamente los índices relevantes.
+        <strong>Coherencia:</strong> {{ analisis_discursivo.scores_sensibles.funcional.coherencia }} /
+        <strong>Relevancia:</strong> {{ analisis_discursivo.scores_sensibles.funcional.relevancia }} /
+        <strong>Registro:</strong> {{ analisis_discursivo.scores_sensibles.funcional.registro }} /
+        <strong>Desarrollo:</strong> {{ analisis_discursivo.scores_sensibles.funcional.desarrollo }}
+      </p>
+
+      <p>
+        <strong>Score global:</strong>
+        {{ analisis_discursivo.scores_sensibles.funcional.global }}
+      </p>
+    </div>
+
+    <!-- ===================== -->
+    <!-- TEXTO SITUACIONAL -->
+    <!-- ===================== -->
+    <div class="card">
+      <h2>Producción Escrita – Texto Situacional</h2>
+
+      <p class="small"><strong>Texto:</strong></p>
+      <p>{{ texto_situacional }}</p>
+
+      <p class="small">
+        <strong>Coherencia:</strong> {{ analisis_discursivo.scores_sensibles.situacional.coherencia }} /
+        <strong>Relevancia:</strong> {{ analisis_discursivo.scores_sensibles.situacional.relevancia }} /
+        <strong>Registro:</strong> {{ analisis_discursivo.scores_sensibles.situacional.registro }} /
+        <strong>Desarrollo:</strong> {{ analisis_discursivo.scores_sensibles.situacional.desarrollo }}
+      </p>
+
+      <p>
+        <strong>Score global:</strong>
+        {{ analisis_discursivo.scores_sensibles.situacional.global }}
+      </p>
+    </div>
+
+    <!-- ===================== -->
+    <!-- SCORE GENERAL -->
+    <!-- ===================== -->
+    <div class="card">
+      <h2>Resultado Global</h2>
+
+      <p>
+        <strong>Score TRU-sensible promedio:</strong>
+        {{ analisis_discursivo.scores_sensibles.global_promedio }}
+      </p>
+
+      <p class="small">
+        Este resultado integra coherencia, ajuste a consigna, registro y desarrollo
+        discursivo. No corresponde aún a una interpretación MetaSistema completa.
+      </p>
+    </div>
+
+    <!-- ===================== -->
+    <!-- DIAGNÓSTICO TÉCNICO -->
+    <!-- ===================== -->
+    <div class="card">
+      <h2>Estado Técnico</h2>
+
+      <p class="small">
+        TRUNAJOD configurado:
+        {{ analisis_discursivo.meta.trunajod_endpoint_configurado }}<br>
+        TRUNAJOD OK (funcional):
+        {{ analisis_discursivo.meta.trunajod_ok_funcional }}<br>
+        TRUNAJOD OK (situacional):
+        {{ analisis_discursivo.meta.trunajod_ok_situacional }}
       </p>
     </div>
 
