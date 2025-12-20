@@ -12,14 +12,107 @@
     <div class="card">
       <h1>Resultados</h1>
       <div class="small">
-        Test Laboral MetaSistema — IPIP-100 + Producción escrita (TRU-sensible)
+        Test Laboral MetaSistema — IPIP-100 + Producción escrita (evidencia comunicativa)
       </div>
     </div>
 
     <div class="card">
-      <h2>IPIP-100 (resumen)</h2>
+      <h2>Perfil general</h2>
+      <p>
+        {{ reporte["resumen"] }}
+      </p>
+      <p class="small">
+        Estado de análisis lingüístico: <b>{{ reporte["status_trunajod"] }}</b>
+      </p>
+    </div>
 
-      <div class="small">Promedios por factor</div>
+    <div class="card">
+      <h2>Fortalezas observadas en el desempeño comunicativo</h2>
+
+      <h3>Tarea funcional</h3>
+      <ul>
+        {% for x in reporte["fortalezas"]["funcional"] %}
+          <li><b>{{ x }}</b></li>
+        {% endfor %}
+      </ul>
+
+      <h3>Tarea situacional</h3>
+      <ul>
+        {% for x in reporte["fortalezas"]["situacional"] %}
+          <li><b>{{ x }}</b></li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Oportunidades de mejora (para entrenamiento o entrevista)</h2>
+
+      <h3>Tarea funcional</h3>
+      <ul>
+        {% for x in reporte["oportunidades"]["funcional"] %}
+          <li>{{ x }}</li>
+        {% endfor %}
+      </ul>
+
+      <h3>Tarea situacional</h3>
+      <ul>
+        {% for x in reporte["oportunidades"]["situacional"] %}
+          <li>{{ x }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Señales del cuestionario IPIP-100</h2>
+      <ul>
+        {% for s in reporte["ipip_senales"] %}
+          <li>{{ s }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Recomendaciones de uso (RR.HH.)</h2>
+      <ul>
+        {% for r in reporte["recomendaciones"] %}
+          <li>{{ r }}</li>
+        {% endfor %}
+      </ul>
+      <div class="small">{{ reporte["disclaimer"] }}</div>
+    </div>
+
+    <div class="card">
+      <h2>Resumen numérico (apoyo)</h2>
+
+      {% set sf = analisis_discursivo["scores_sensibles"]["funcional"] %}
+      {% set ss = analisis_discursivo["scores_sensibles"]["situacional"] %}
+      {% set sg = analisis_discursivo["scores_sensibles"]["global_promedio"] %}
+
+      <p><b>Score global comunicativo:</b> {{ sg if sg is not none else "—" }}</p>
+
+      <h3>Funcional</h3>
+      <ul>
+        <li>Coherencia: <b>{{ sf["coherencia"] if sf["coherencia"] is not none else "—" }}</b></li>
+        <li>Relevancia: <b>{{ sf["relevancia"] if sf["relevancia"] is not none else "—" }}</b></li>
+        <li>Registro: <b>{{ sf["registro"] if sf["registro"] is not none else "—" }}</b></li>
+        <li>Desarrollo: <b>{{ sf["desarrollo"] if sf["desarrollo"] is not none else "—" }}</b></li>
+        <li>Tono (alerta suave): <b>{{ sf["alerta_emocion"] if sf["alerta_emocion"] is not none else "—" }}</b></li>
+        <li>Global funcional: <b>{{ sf["global"] if sf["global"] is not none else "—" }}</b></li>
+      </ul>
+
+      <h3>Situacional</h3>
+      <ul>
+        <li>Coherencia: <b>{{ ss["coherencia"] if ss["coherencia"] is not none else "—" }}</b></li>
+        <li>Relevancia: <b>{{ ss["relevancia"] if ss["relevancia"] is not none else "—" }}</b></li>
+        <li>Registro: <b>{{ ss["registro"] if ss["registro"] is not none else "—" }}</b></li>
+        <li>Desarrollo: <b>{{ ss["desarrollo"] if ss["desarrollo"] is not none else "—" }}</b></li>
+        <li>Tono (alerta suave): <b>{{ ss["alerta_emocion"] if ss["alerta_emocion"] is not none else "—" }}</b></li>
+        <li>Global situacional: <b>{{ ss["global"] if ss["global"] is not none else "—" }}</b></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>IPIP-100 (promedios)</h2>
       <ul>
         <li><b>CON</b> ({{ factor_labels["CON"] }}): {{ avg_scores["CON"] }}</li>
         <li><b>NEU</b> ({{ factor_labels["NEU"] }}): {{ avg_scores["NEU"] }}</li>
@@ -29,43 +122,9 @@
       </ul>
     </div>
 
+    {% if show_technical %}
     <div class="card">
-      <h2>Producción escrita (TRU-sensible)</h2>
-
-      {% set sf = analisis_discursivo["scores_sensibles"]["funcional"] %}
-      {% set ss = analisis_discursivo["scores_sensibles"]["situacional"] %}
-      {% set sg = analisis_discursivo["scores_sensibles"]["global_promedio"] %}
-
-      <h3>Score global</h3>
-      <p><b>{{ sg if sg is not none else "—" }}</b></p>
-
-      <h3>Funcional</h3>
-      <ul>
-        <li>Coherencia: <b>{{ sf["coherencia"] }}</b></li>
-        <li>Relevancia: <b>{{ sf["relevancia"] }}</b></li>
-        <li>Registro: <b>{{ sf["registro"] }}</b></li>
-        <li>Desarrollo: <b>{{ sf["desarrollo"] }}</b></li>
-        <li>Tono (alerta suave): <b>{{ sf["alerta_emocion"] }}</b></li>
-        <li>Global funcional: <b>{{ sf["global"] }}</b></li>
-      </ul>
-
-      <h3>Situacional</h3>
-      <ul>
-        <li>Coherencia: <b>{{ ss["coherencia"] }}</b></li>
-        <li>Relevancia: <b>{{ ss["relevancia"] }}</b></li>
-        <li>Registro: <b>{{ ss["registro"] }}</b></li>
-        <li>Desarrollo: <b>{{ ss["desarrollo"] }}</b></li>
-        <li>Tono (alerta suave): <b>{{ ss["alerta_emocion"] }}</b></li>
-        <li>Global situacional: <b>{{ ss["global"] }}</b></li>
-      </ul>
-
-      <div class="small">
-        Nota: esto todavía no “prueba MetaSistema”; es agrupación estética y funcional de índices sensibles.
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Diagnóstico técnico</h2>
+      <h2>Diagnóstico técnico (solo modo debug)</h2>
       <div class="small">
         TRUNAJOD endpoint configurado: <b>{{ analisis_discursivo["meta"]["trunajod_endpoint_configurado"] }}</b><br/>
         TRUNAJOD ok (funcional): <b>{{ analisis_discursivo["meta"]["trunajod_ok_funcional"] }}</b><br/>
@@ -76,6 +135,7 @@
         <pre>{{ analisis_discursivo["meta"] }}</pre>
       {% endif %}
     </div>
+    {% endif %}
 
     <div class="card">
       <a href="/test">Volver al test</a>
