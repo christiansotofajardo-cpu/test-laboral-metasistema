@@ -18,13 +18,16 @@ TRUNAJOD_ENDPOINT = os.getenv("TRUNAJOD_ENDPOINT", "").strip()   # ej: https://t
 TRUNAJOD_API_KEY = os.getenv("TRUNAJOD_API_KEY", "").strip()
 TRUNAJOD_TIMEOUT = float(os.getenv("TRUNAJOD_TIMEOUT", "25"))
 
+# Mostrar bloque técnico solo si lo activas (por defecto NO)
+SHOW_TECHNICAL = os.getenv("SHOW_TECHNICAL", "0").strip() in ("1", "true", "True", "YES", "yes")
+
 # (Opcional) consignas internas para mostrar en el informe
 CONSIGNA_FUNCIONAL = os.getenv("CONSIGNA_FUNCIONAL", "Tarea funcional (consigna no configurada).")
 CONSIGNA_SITUACIONAL = os.getenv("CONSIGNA_SITUACIONAL", "Tarea situacional (consigna no configurada).")
 
 
 # ============================================================
-# IPIP-100 ITEMS (tal como lo tenías)
+# IPIP-100 ITEMS
 # ============================================================
 
 IPIP_ITEMS: List[Dict] = [
@@ -202,7 +205,7 @@ def _get_float(norm_map: Dict[str, Any], possible_keys: List[str]) -> Optional[f
         if nk in norm_map:
             try:
                 v = norm_map[nk]
-                if v is None: 
+                if v is None:
                     continue
                 return float(v)
             except Exception:
@@ -313,7 +316,6 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     n_words = len(words)
 
     # ---------- Coherencia ----------
-    # rangos heurísticos (ajustables tras datos reales)
     s_eg = mean_or_none([
         norm_0_100(idx.get("EG_local_coherence_PACC"), 0.20, 0.85, invert=False),
         norm_0_100(idx.get("EG_local_coherence_PW"),   0.20, 0.85, invert=False),
@@ -329,7 +331,6 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     relevancia = mean_or_none([s_w2v, s_lex])
 
     # ---------- Registro/Formalidad ----------
-    # más léxico, más conectores, más marcadores; menos pronombres y menos 1-2 persona
     s_lexden = norm_0_100(idx.get("SP_densidad_lexica"), 0.30, 0.70, invert=False)
     s_conn   = norm_0_100(idx.get("SP_connecting_words"), 0.01, 0.08, invert=False)
     s_dm     = mean_or_none([
@@ -344,7 +345,6 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     s_mtld  = norm_0_100(idx.get("MTLD"), 40, 140, invert=False)
     s_syn   = norm_0_100(idx.get("SP_syntactic_similarity"), 0.20, 0.85, invert=False)
 
-    # Longitud: rango óptimo en tareas laborales (ajustable)
     if n_words >= 140:
         s_len = 95
     elif n_words >= 90:
@@ -356,7 +356,6 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     else:
         s_len = 35
 
-    # cláusulas (señal de estructuración; no siempre más es mejor)
     s_clause = mean_or_none([
         norm_0_100(idx.get("SP_clause_density"), 0.10, 0.45, invert=False),
         norm_0_100(idx.get("SP_clause_length"),  6,  18,  invert=False),
@@ -364,7 +363,6 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     desarrollo = mean_or_none([s_mtld, s_syn, s_len, s_clause])
 
     # ---------- Emoción (alerta suave) ----------
-    # No es diagnóstico; solo una señal operativa.
     neg = idx.get("NEG")
     anger = idx.get("anger")
     fear = idx.get("fear")
@@ -374,9 +372,9 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     alerta_emocion = mean_or_none([s_neg, s_ang, s_fear])
 
     # ---------- Global TRU-Sensible ----------
-    # Ponderación: coherencia + relevancia mandan (tarea-específico)
     parts = []
     weights = []
+
     def add(x, w):
         if x is None:
             return
@@ -392,7 +390,6 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
     if parts and weights:
         global_score = int(round(sum(p*w for p, w in zip(parts, weights)) / sum(weights)))
 
-    # Niveles simples
     def nivel(x: Optional[int]) -> str:
         if x is None:
             return "No disponible"
@@ -417,6 +414,129 @@ def score_sensitive(text: str, idx: Dict[str, Optional[float]]) -> Dict[str, Any
             "desarrollo": nivel(desarrollo),
             "global": nivel(global_score),
         }
+    }
+
+
+# ============================================================
+# INTERPRETA — Reporte MetaSistema (texto listo para el usuario)
+# ============================================================
+
+def _fmt(x: Optional[float]) -> str:
+    return "—" if x is None else str(x)
+
+def generar_reporte_metasistema(
+    avg_scores: Dict[str, Optional[float]],
+    score_func: Dict[str, Any],
+    score_sit: Dict[str, Any],
+    combined_global: Optional[int],
+    tru_ok_func: bool,
+    tru_ok_sit: bool
+) -> Dict[str, Any]:
+    """
+    Devuelve un reporte 'humano' basado en:
+    - IPIP (autopercepción)
+    - Producción escrita (evidencia conductual por lenguaje)
+    """
+    # Nivel global del lenguaje
+    if combined_global is None:
+        nivel_global = "No disponible"
+    elif combined_global < 45:
+        nivel_global = "Bajo"
+    elif combined_global < 70:
+        nivel_global = "Medio"
+    else:
+        nivel_global = "Alto"
+
+    # Lecturas rápidas
+    f_ng = score_func.get("niveles", {}).get("global", "No disponible")
+    s_ng = score_sit.get("niveles", {}).get("global", "No disponible")
+
+    # Dimensiones fuertes/debiles (lenguaje)
+    def top_dims(s: Dict[str, Any]) -> List[str]:
+        order = [
+            ("coherencia", "Coherencia"),
+            ("relevancia", "Relevancia"),
+            ("desarrollo", "Desarrollo"),
+            ("registro", "Registro"),
+        ]
+        vals = []
+        for k, label in order:
+            v = s.get(k)
+            if isinstance(v, int):
+                vals.append((v, label))
+        vals.sort(reverse=True, key=lambda t: t[0])
+        return [label for _, label in vals[:2]]
+
+    def low_dims(s: Dict[str, Any]) -> List[str]:
+        order = [
+            ("coherencia", "Coherencia"),
+            ("relevancia", "Relevancia"),
+            ("desarrollo", "Desarrollo"),
+            ("registro", "Registro"),
+        ]
+        vals = []
+        for k, label in order:
+            v = s.get(k)
+            if isinstance(v, int):
+                vals.append((v, label))
+        vals.sort(key=lambda t: t[0])
+        return [label for _, label in vals[:2]]
+
+    fortalezas_func = top_dims(score_func)
+    oportunidades_func = low_dims(score_func)
+    fortalezas_sit = top_dims(score_sit)
+    oportunidades_sit = low_dims(score_sit)
+
+    # IPIP (solo como señales simples; no hacemos clínica)
+    con = avg_scores.get("CON")
+    neu = avg_scores.get("NEU")
+    agr = avg_scores.get("AGR")
+    ext = avg_scores.get("EXT")
+    ope = avg_scores.get("OPE")
+
+    señales = []
+    if con is not None and con >= 4.0:
+        señales.append("Alta orientación a la organización y cumplimiento (Responsabilidad).")
+    if neu is not None and neu >= 4.0:
+        señales.append("Buen control emocional y tolerancia a la presión (Estabilidad emocional).")
+    if agr is not None and agr >= 4.0:
+        señales.append("Tendencia cooperativa y prosocial en el trabajo (Amabilidad).")
+    if ext is not None and ext >= 4.0:
+        señales.append("Energía social y comodidad comunicativa en equipo (Extraversión).")
+    if ope is not None and ope >= 4.0:
+        señales.append("Apertura al aprendizaje, curiosidad y adaptación a cambios (Apertura).")
+
+    if not señales:
+        señales.append("El perfil IPIP sugiere un patrón mixto; conviene interpretar según el cargo y contexto.")
+
+    # Disponibilidad TRUNAJOD
+    data_status = "Completo" if (tru_ok_func and tru_ok_sit) else ("Parcial" if (tru_ok_func or tru_ok_sit) else "No disponible")
+
+    resumen = (
+        f"El desempeño comunicativo global observado es **{nivel_global}**. "
+        f"En tarea funcional, el desempeño es **{f_ng}**; en tarea situacional, **{s_ng}**. "
+        f"Este resultado integra autopercepción (IPIP-100) y evidencia conductual en lenguaje escrito."
+    )
+
+    return {
+        "nivel_global_lenguaje": nivel_global,
+        "global_score": combined_global,
+        "status_trunajod": data_status,
+        "resumen": resumen,
+        "fortalezas": {
+            "funcional": fortalezas_func,
+            "situacional": fortalezas_sit,
+        },
+        "oportunidades": {
+            "funcional": oportunidades_func,
+            "situacional": oportunidades_sit,
+        },
+        "ipip_senales": señales,
+        "recomendaciones": [
+            "Usar estos resultados como insumo para entrevista estructurada (ejemplos conductuales) y revisión de referencias.",
+            "Si el cargo es crítico, complementar con muestra de trabajo (work sample) alineada al rol.",
+        ],
+        "disclaimer": "Este reporte no constituye diagnóstico clínico. Es una evaluación orientada a contextos laborales, basada en cuestionario y desempeño comunicativo escrito.",
     }
 
 
@@ -485,7 +605,7 @@ async def submit_test(request: Request):
 
     analisis_discursivo = {
         "meta": {
-            "version": "TestLaboral_TRU_Sensible_v1",
+            "version": "TestLaboral_TRU_Sensible_v2",
             "timestamp": datetime.utcnow().isoformat(),
             "trunajod_endpoint_configurado": bool(TRUNAJOD_ENDPOINT),
             "trunajod_ok_funcional": tru_func.get("ok", False),
@@ -512,6 +632,18 @@ async def submit_test(request: Request):
         }
     }
 
+    # -------------------------
+    # INTERPRETA: reporte humano
+    # -------------------------
+    reporte = generar_reporte_metasistema(
+        avg_scores=avg_scores,
+        score_func=score_func,
+        score_sit=score_sit,
+        combined_global=combined_global,
+        tru_ok_func=bool(tru_func.get("ok", False)),
+        tru_ok_sit=bool(tru_sit.get("ok", False)),
+    )
+
     return templates.TemplateResponse(
         "result.html",
         {
@@ -522,5 +654,7 @@ async def submit_test(request: Request):
             "texto_funcional": texto_funcional,
             "texto_situacional": texto_situacional,
             "analisis_discursivo": analisis_discursivo,
+            "reporte": reporte,
+            "show_technical": SHOW_TECHNICAL,
         }
     )
