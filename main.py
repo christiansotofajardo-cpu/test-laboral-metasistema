@@ -1,9 +1,14 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import uuid
 import os
+import io
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 # =========================================================
 # APP BASE
@@ -37,7 +42,6 @@ RESULT_STORE = {}
 
 # =========================================================
 # ACTIVADORES LINGÜÍSTICOS – TEST LABORAL 6.0
-# (solo tarea situacional)
 # =========================================================
 
 ACTIVADORES = {
@@ -78,6 +82,10 @@ ACTIVADORES = {
     }
 }
 
+# =========================================================
+# LÓGICA 6.0
+# =========================================================
+
 def _count_matches(texto: str, keywords: list[str]) -> int:
     texto = (texto or "").lower().strip()
     if not texto:
@@ -85,26 +93,42 @@ def _count_matches(texto: str, keywords: list[str]) -> int:
     return sum(1 for kw in keywords if kw in texto)
 
 def detectar_variante_situacional(texto_situacional: str) -> dict:
-    """
-    Selección dinámica MEDIO–A / MEDIO–B / MEDIO–C
-    basada en activadores lingüísticos simples.
-    """
     conteos = {
         k: _count_matches(texto_situacional, v["keywords"])
         for k, v in ACTIVADORES.items()
     }
 
     variante_key = max(conteos, key=conteos.get)
-
-    # fallback ético: si no hay activadores claros
     if conteos[variante_key] == 0:
-        variante_key = "B"
+        variante_key = "B"  # fallback ético
 
     return {
         "variante": f"MEDIO–{variante_key}",
         "explicacion": ACTIVADORES[variante_key]["explicacion"],
         "conteos": conteos
     }
+
+# =========================================================
+# GRÁFICOS (PYTHON)
+# =========================================================
+
+def _plot_bar_png(labels, values, title: str) -> bytes:
+    fig = plt.figure(figsize=(7, 3), dpi=150)
+    ax = fig.add_subplot(111)
+
+    ax.bar(labels, values)
+    ax.set_title(title)
+    ax.set_ylim(0, max(values) + 0.5 if values else 1)
+
+    for i, v in enumerate(values):
+        ax.text(i, v + 0.05, str(v), ha="center", va="bottom", fontsize=9)
+
+    fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    plt.close(fig)
+    buf.seek(0)
+    return buf.getvalue()
 
 # =========================================================
 # RUTAS USUARIO
@@ -114,14 +138,12 @@ def detectar_variante_situacional(texto_situacional: str) -> dict:
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
 @app.get("/test", response_class=HTMLResponse)
 async def show_test(request: Request):
     return templates.TemplateResponse(
         "test.html",
         {"request": request, "items": IPIP_ITEMS}
     )
-
 
 @app.post("/test", response_class=HTMLResponse)
 async def submit_test(request: Request):
@@ -141,7 +163,7 @@ async def submit_test(request: Request):
             counts[item["factor"]] += 1
 
     avg_scores = {
-        k: round(scores[k] / counts[k], 2) if counts[k] else None
+        k: round(scores[k] / counts[k], 2) if counts[k] else 0
         for k in scores
     }
 
@@ -156,10 +178,7 @@ async def submit_test(request: Request):
         "meta_6": meta_6
     }
 
-    return templates.TemplateResponse(
-        "submitted.html",
-        {"request": request}
-    )
+    return templates.TemplateResponse("submitted.html", {"request": request})
 
 # =========================================================
 # RUTAS ADMIN
@@ -172,19 +191,11 @@ async def admin_list(request: Request):
         {"request": request, "results": RESULT_STORE}
     )
 
-
 @app.get("/admin/{result_id}", response_class=HTMLResponse)
 async def admin_detail(request: Request, result_id: str):
     data = RESULT_STORE.get(result_id)
-
     if not data:
         return HTMLResponse("Evaluación no encontrada", status_code=404)
-
-    # robustez: recalcular si no existe
-    if "meta_6" not in data:
-        data["meta_6"] = detectar_variante_situacional(
-            data.get("texto_situacional", "")
-        )
 
     return templates.TemplateResponse(
         "admin_detail.html",
@@ -195,3 +206,31 @@ async def admin_detail(request: Request, result_id: str):
         }
     )
 
+# =========================================================
+# ENDPOINTS DE IMÁGENES
+# =========================================================
+
+@app.get("/admin/{result_id}/ipip.png")
+async def admin_ipip_png(result_id: str):
+    data = RESULT_STORE.get(result_id)
+    if not data:
+        return Response(status_code=404)
+
+    labels = ["CON", "AGR", "EXT", "NEU", "OPE"]
+    values = [data["avg_scores"].get(k, 0) for k in labels]
+
+    png = _plot_bar_png(labels, values, "IPIP – Promedios por factor")
+    return Response(content=png, media_type="image/png")
+
+@app.get("/admin/{result_id}/activadores.png")
+async def admin_activadores_png(result_id: str):
+    data = RESULT_STORE.get(result_id)
+    if not data:
+        return Response(status_code=404)
+
+    conteos = data["meta_6"]["conteos"]
+    labels = ["A", "B", "C"]
+    values = [conteos.get(k, 0) for k in labels]
+
+    png = _plot_bar_png(labels, values, "Activadores discursivos (tarea situacional)")
+    return Response(content=png, media_type="image/png")
