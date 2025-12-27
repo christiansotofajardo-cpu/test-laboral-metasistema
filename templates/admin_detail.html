@@ -2,75 +2,70 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Reporte</title>
+  <title>Reporte administrador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:40px;max-width:1100px}
-    .card{border:1px solid #ddd;border-radius:12px;padding:18px;margin:14px 0}
-    .muted{color:#666}
-    pre{white-space:pre-wrap;word-break:break-word;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:12px}
-    code{background:#f3f3f3;padding:2px 6px;border-radius:6px}
-    h2,h3{margin:0 0 10px 0}
+    body { font-family: system-ui, Arial; margin: 40px; max-width: 1100px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+    .muted { color: #666; }
+    pre { background: #fafafa; padding: 12px; border-radius: 10px; border: 1px solid #eee; }
+    img { max-width: 100%; border: 1px solid #eee; border-radius: 12px; padding: 8px; margin-top: 10px; }
+    h2, h3 { margin-top: 0; }
+    code { background: #f3f3f3; padding: 2px 6px; border-radius: 6px; }
   </style>
 </head>
 <body>
-  <h1>Reporte administrador</h1>
-  <p class="muted"><a href="/admin">Volver al listado</a></p>
 
-  <div class="card">
-    <h2>Síntesis ejecutiva</h2>
-    <p class="muted">
-      Este reporte interpreta patrones discursivos observables en contexto. No puntúa, no clasifica personas, no emite juicios de valor.
-    </p>
-    <p><strong>ID evaluación:</strong> <code>{{ result_id }}</code></p>
-  </div>
+<a href="/admin" class="muted">← Volver al listado</a>
 
-  <div class="card">
-    <h2>Producción escrita – Tarea funcional</h2>
-    <h3>Interpretación estándar</h3>
-    <p class="muted">
-      Lectura interpretativa en nivel MEDIO (estructura congelada). En 6.0 no se automatiza variante para esta tarea.
-    </p>
-    <h3>Texto completo del evaluado</h3>
-    <pre>{{ data.texto_funcional }}</pre>
-  </div>
+<div class="card">
+  <h2>Síntesis ejecutiva</h2>
+  <p class="muted">
+    Este reporte interpreta patrones discursivos observables en contexto.
+    No puntúa, no clasifica personas y no emite juicios de valor.
+  </p>
+  <p><strong>ID evaluación:</strong> <code>{{ result_id }}</code></p>
+</div>
 
-  <div class="card">
-    <h2>Producción escrita – Tarea situacional</h2>
+<div class="card">
+  <h2>Producción escrita – Tarea funcional</h2>
+  <p class="muted">Interpretación estándar en nivel MEDIO (estructura congelada).</p>
+  <pre>{{ data.texto_funcional }}</pre>
+</div>
 
-    <h3>Variante interpretativa MetaSistema (6.0)</h3>
-    <p><strong>Variante seleccionada:</strong> {{ data.meta_6.variante }}</p>
-    <p>{{ data.meta_6.explicacion }}</p>
+<div class="card">
+  <h2>Producción escrita – Tarea situacional</h2>
 
-    <details>
-      <summary class="muted">Detalle técnico (debug)</summary>
-      <pre>{{ data.meta_6.conteos }}</pre>
-    </details>
+  <h3>Variante interpretativa MetaSistema (6.0)</h3>
+  <p><strong>Variante seleccionada:</strong> {{ data.meta_6.variante }}</p>
+  <p>{{ data.meta_6.explicacion }}</p>
 
-    <h3>Texto completo del evaluado</h3>
-    <pre>{{ data.texto_situacional }}</pre>
-  </div>
+  <h3>Visualización de activadores</h3>
+  <img src="/admin/{{ result_id }}/activadores.png">
 
-  <div class="card">
-    <h2>Criterios interpretativos aplicados</h2>
-    <p class="muted">
-      La selección de variante 6.0 se basa exclusivamente en activadores lingüísticos simples y observables
-      en la tarea situacional (locus de acción, derivación jerárquica, foco relacional), sin inferencia de rasgos personales.
-    </p>
-  </div>
+  <h3>Texto completo del evaluado</h3>
+  <pre>{{ data.texto_situacional }}</pre>
+</div>
 
-  <div class="card">
-    <h2>Perfil IPIP contextualizado</h2>
-    <p class="muted">Promedios por factor (demo):</p>
-    <pre>{{ data.avg_scores }}</pre>
-  </div>
+<div class="card">
+  <h2>Criterios interpretativos aplicados</h2>
+  <p class="muted">
+    La selección de variante se basa exclusivamente en activadores lingüísticos
+    simples y observables en la tarea situacional, sin inferencia de rasgos personales.
+  </p>
+</div>
 
-  <div class="card">
-    <h2>Coherencia MetaSistema</h2>
-    <p class="muted">
-      Coherencia general del reporte: estructura estable, explicación visible y trazable, sin scoring duro.
-    </p>
-  </div>
+<div class="card">
+  <h2>Perfil IPIP contextualizado</h2>
+  <img src="/admin/{{ result_id }}/ipip.png">
+</div>
+
+<div class="card">
+  <h2>Coherencia MetaSistema</h2>
+  <p class="muted">
+    Reporte consistente, explicable y trazable, alineado con el marco ético del MetaSistema.
+  </p>
+</div>
+
 </body>
 </html>
-
