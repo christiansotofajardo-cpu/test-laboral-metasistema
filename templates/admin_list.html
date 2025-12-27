@@ -1,22 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin – Evaluaciones</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:40px;max-width:1000px}
+    .card{border:1px solid #ddd;border-radius:12px;padding:18px;margin:14px 0}
+    a{color:inherit}
+    .muted{color:#666}
+    code{background:#f3f3f3;padding:2px 6px;border-radius:6px}
+  </style>
 </head>
 <body>
+  <h1>Administrador</h1>
+  <p class="muted">Listado de evaluaciones registradas en memoria (RAM).</p>
 
-<h1>Evaluaciones recibidas</h1>
-
-<ul>
-    {% for key in results.keys() %}
-        <li>
-            <a href="/admin/{{ key }}">Evaluación {{ loop.index }}</a>
-        </li>
-    {% else %}
-        <li>No hay evaluaciones aún.</li>
+  {% if results|length == 0 %}
+    <div class="card">
+      <p>No hay evaluaciones todavía.</p>
+      <p class="muted"><a href="/test">Ir al test</a></p>
+    </div>
+  {% else %}
+    {% for rid, data in results.items() %}
+      <div class="card">
+        <p><strong>ID:</strong> <code>{{ rid }}</code></p>
+        <p class="muted">
+          <a href="/admin/{{ rid }}">Ver reporte</a>
+        </p>
+      </div>
     {% endfor %}
-</ul>
-
+  {% endif %}
 </body>
 </html>
+
