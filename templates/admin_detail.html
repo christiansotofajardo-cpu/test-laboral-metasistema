@@ -2,32 +2,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Admin – Detalle evaluación</title>
+    <title>Admin – Reporte MetaSistema</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            margin-top: 30px;
+        }
+        .bloque {
+            margin-bottom: 40px;
+        }
+        .evidencia {
+            background: #f4f4f4;
+            padding: 15px;
+            white-space: pre-wrap;
+            border-left: 4px solid #999;
+        }
+        .ipip li {
+            margin-bottom: 4px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1>Detalle de evaluación</h1>
+<h1>Reporte MetaSistema – Evaluación</h1>
 
-<h2>IPIP – Promedios</h2>
-<ul>
-    {% for k, v in data.avg_scores.items() %}
-        <li>{{ k }}: {{ v }}</li>
-    {% endfor %}
-</ul>
+<!-- BLOQUE A -->
+<div class="bloque">
+    <h2>Síntesis ejecutiva</h2>
 
-<h2>Texto funcional</h2>
-<p style="white-space: pre-wrap;">
-    {{ data.texto_funcional }}
-</p>
+    <p>
+        El desempeño comunicativo global observado es <b>Medio</b>. La producción escrita
+        evidencia comprensión general del rol y de la situación planteada, aunque con
+        niveles variables de desarrollo y explicitación del aporte profesional. En la tarea
+        situacional se observan estrategias funcionales, pero con margen de mejora en la
+        gestión autónoma del conflicto. La coherencia entre autorreporte y desempeño es
+        <b>parcial</b>, lo qu
 
-<h2>Texto situacional</h2>
-<p style="white-space: pre-wrap;">
-    {{ data.texto_situacional }}
-</p>
-
-<p>
-    <a href="/admin">← Volver al listado</a>
-</p>
-
-</body>
-</html>
