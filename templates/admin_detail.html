@@ -12,6 +12,7 @@
     img { max-width: 100%; border: 1px solid #eee; border-radius: 12px; padding: 8px; margin-top: 10px; }
     h2, h3 { margin-top: 0; }
     code { background: #f3f3f3; padding: 2px 6px; border-radius: 6px; }
+    ul { margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -40,8 +41,19 @@
   <p><strong>Variante seleccionada:</strong> {{ data.meta_6.variante }}</p>
   <p>{{ data.meta_6.explicacion }}</p>
 
+  <h3>Activadores detectados (conteo)</h3>
+  <ul>
+    <li><strong>A – Acción directa:</strong> {{ data.meta_6.conteos.A }}</li>
+    <li><strong>B – Derivación jerárquica:</strong> {{ data.meta_6.conteos.B }}</li>
+    <li><strong>C – Foco relacional:</strong> {{ data.meta_6.conteos.C }}</li>
+  </ul>
+
   <h3>Visualización de activadores</h3>
-  <img src="/admin/{{ result_id }}/activadores.png">
+  {% if matplotlib_ok %}
+    <img src="/admin/{{ result_id }}/activadores.png">
+  {% else %}
+    <p class="muted">Gráfico no disponible (matplotlib no instalado).</p>
+  {% endif %}
 
   <h3>Texto completo del evaluado</h3>
   <pre>{{ data.texto_situacional }}</pre>
@@ -57,7 +69,20 @@
 
 <div class="card">
   <h2>Perfil IPIP contextualizado</h2>
-  <img src="/admin/{{ result_id }}/ipip.png">
+
+  <ul>
+    <li><strong>CON:</strong> {{ data.avg_scores.CON }}</li>
+    <li><strong>AGR:</strong> {{ data.avg_scores.AGR }}</li>
+    <li><strong>EXT:</strong> {{ data.avg_scores.EXT }}</li>
+    <li><strong>NEU:</strong> {{ data.avg_scores.NEU }}</li>
+    <li><strong>OPE:</strong> {{ data.avg_scores.OPE }}</li>
+  </ul>
+
+  {% if matplotlib_ok %}
+    <img src="/admin/{{ result_id }}/ipip.png">
+  {% else %}
+    <p class="muted">Gráfico no disponible (matplotlib no instalado).</p>
+  {% endif %}
 </div>
 
 <div class="card">
@@ -69,3 +94,4 @@
 
 </body>
 </html>
+
