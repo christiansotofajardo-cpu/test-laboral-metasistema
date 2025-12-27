@@ -7,7 +7,7 @@ import os
 import io
 
 # =========================================================
-# Intento de importar matplotlib (SIN BOTAR EL DEPLOY)
+# Intento seguro de matplotlib (no botar deploy)
 # =========================================================
 MATPLOTLIB_OK = True
 try:
@@ -86,6 +86,9 @@ ACTIVADORES = {
     }
 }
 
+# =========================================================
+# LÓGICA 6.0
+# =========================================================
 def _count_matches(texto: str, keywords: list[str]) -> int:
     texto = (texto or "").lower().strip()
     if not texto:
@@ -109,11 +112,9 @@ def detectar_variante_situacional(texto_situacional: str) -> dict:
     }
 
 # =========================================================
-# GRÁFICOS (PYTHON) – con fallback si matplotlib no está
+# GRÁFICOS (PYTHON)
 # =========================================================
-def _placeholder_png(msg: str = "Gráfico no disponible (matplotlib no instalado).") -> bytes:
-    # PNG 1x1 transparente (muy liviano) como fallback.
-    # Luego lo “acompañamos” con texto en HTML si quieres.
+def _placeholder_png() -> bytes:
     return (
         b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
         b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDATx\x9cc``\x00"
@@ -126,7 +127,6 @@ def _plot_bar_png(labels, values, title: str) -> bytes:
 
     fig = plt.figure(figsize=(7, 3), dpi=150)
     ax = fig.add_subplot(111)
-
     ax.bar(labels, values)
     ax.set_title(title)
     ax.set_ylim(0, max(values) + 0.5 if values else 1)
@@ -191,7 +191,9 @@ async def submit_test(request: Request):
 # =========================================================
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_list(request: Request):
-    return templates.TemplateResponse("admin_list.html", {"request": request, "results": RESULT_STORE})
+    return templates.TemplateResponse(
+        "admin_list.html", {"request": request, "results": RESULT_STORE}
+    )
 
 @app.get("/admin/{result_id}", response_class=HTMLResponse)
 async def admin_detail(request: Request, result_id: str):
@@ -201,7 +203,12 @@ async def admin_detail(request: Request, result_id: str):
 
     return templates.TemplateResponse(
         "admin_detail.html",
-        {"request": request, "result_id": result_id, "data": data, "matplotlib_ok": MATPLOTLIB_OK}
+        {
+            "request": request,
+            "result_id": result_id,
+            "data": data,
+            "matplotlib_ok": MATPLOTLIB_OK
+        }
     )
 
 # =========================================================
@@ -215,7 +222,6 @@ async def admin_ipip_png(result_id: str):
 
     labels = ["CON", "AGR", "EXT", "NEU", "OPE"]
     values = [data["avg_scores"].get(k, 0) for k in labels]
-
     png = _plot_bar_png(labels, values, "IPIP – Promedios por factor")
     return Response(content=png, media_type="image/png")
 
@@ -228,6 +234,5 @@ async def admin_activadores_png(result_id: str):
     conteos = data["meta_6"]["conteos"]
     labels = ["A", "B", "C"]
     values = [conteos.get(k, 0) for k in labels]
-
     png = _plot_bar_png(labels, values, "Activadores discursivos (tarea situacional)")
     return Response(content=png, media_type="image/png")
