@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Admin – Reporte MetaSistema</title>
+    <title>Reporte MetaSistema – Evaluación</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,5 +41,77 @@
         niveles variables de desarrollo y explicitación del aporte profesional. En la tarea
         situacional se observan estrategias funcionales, pero con margen de mejora en la
         gestión autónoma del conflicto. La coherencia entre autorreporte y desempeño es
-        <b>parcial</b>, lo qu
+        <b>parcial</b>, lo que sugiere la conveniencia de profundizar estos aspectos en una
+        entrevista estructurada o mediante evidencia complementaria.
+    </p>
+</div>
+
+<!-- BLOQUE B1 -->
+<div class="bloque">
+    <h2>Producción escrita – Tarea funcional</h2>
+
+    <p>
+        En la tarea funcional, el discurso evidencia comprensión general del rol, aunque con
+        desarrollo parcial de las responsabilidades y del aporte específico. Se observan
+        ideas pertinentes, pero con un nivel de explicitación limitado o poco articulado.
+    </p>
+
+    <h3>Texto del evaluado</h3>
+    <div class="evidencia">
+        {{ data.texto_funcional }}
+    </div>
+</div>
+
+<!-- BLOQUE B2 -->
+<div class="bloque">
+    <h2>Producción escrita – Tarea situacional</h2>
+
+    <p>
+        En la tarea situacional, se identifican estrategias funcionales de resolución del
+        conflicto, aunque con tendencia a soluciones parciales o dependientes del contexto.
+        El manejo de la situación es adecuado, pero podría beneficiarse de mayor iniciativa
+        comunicativa.
+    </p>
+
+    <h3>Texto del evaluado</h3>
+    <div class="evidencia">
+        {{ data.texto_situacional }}
+    </div>
+</div>
+
+<!-- BLOQUE C -->
+<div class="bloque">
+    <h2>Perfil de autorreporte (IPIP)</h2>
+
+    <p>
+        El perfil de autorreporte IPIP presenta un patrón mixto en relación con las demandas
+        del contexto laboral. Los rasgos observados deben interpretarse de manera
+        contextualizada, considerando que su manifestación puede variar según el tipo de
+        rol y nivel de exigencia.
+    </p>
+
+    <ul class="ipip">
+        {% for k, v in data.avg_scores.items() %}
+            <li><b>{{ k }}</b>: {{ v }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- BLOQUE D -->
+<div class="bloque">
+    <h2>Coherencia MetaSistema</h2>
+
+    <p>
+        Se observa una coherencia parcial entre el perfil de autorreporte y la evidencia
+        discursiva, con diferencias que podrían explicarse por factores situacionales o por
+        estrategias compensatorias utilizadas por la persona evaluada.
+    </p>
+</div>
+
+<p>
+    <a href="/admin">← Volver al listado de evaluaciones</a>
+</p>
+
+</body>
+</html>
 
