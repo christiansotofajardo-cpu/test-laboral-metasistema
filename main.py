@@ -4,7 +4,6 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from typing import Dict, Any
 import os
-import httpx
 import uuid
 
 app = FastAPI()
@@ -29,54 +28,56 @@ RESULT_STORE: Dict[str, Dict[str, Any]] = {}
 # CONFIG
 # ============================================================
 
-TRUNAJOD_ENDPOINT = os.getenv("TRUNAJOD_ENDPOINT", "").strip()
-TRUNAJOD_API_KEY = os.getenv("TRUNAJOD_API_KEY", "").strip()
-TRUNAJOD_TIMEOUT = float(os.getenv("TRUNAJOD_TIMEOUT", "25"))
-
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
 
-SHOW_TECHNICAL = os.getenv("SHOW_TECHNICAL", "0") in ("1", "true", "True")
-
 # ============================================================
-# IPIP_ITEMS
-# ============================================================
-# ⚠️ PEGAR AQUÍ TU IPIP_ITEMS ORIGINAL (SIN CAMBIOS)
-
-# ============================================================
-# TRUNAJOD CLIENT
+# IPIP ITEMS (DEMO FUNCIONAL)
+# 👉 Puedes reemplazar esta lista por el IPIP-100 completo cuando quieras
 # ============================================================
 
-async def trunajod_analyze_text(texto: str) -> dict:
-    texto = (texto or "").strip()
-    if not texto:
-        return {"ok": False, "data": {}, "error": "Texto vacío"}
-
-    if not TRUNAJOD_ENDPOINT:
-        return {"ok": False, "data": {}, "error": "TRUNAJOD_ENDPOINT no configurado"}
-
-    headers = {"Content-Type": "application/json"}
-    if TRUNAJOD_API_KEY:
-        headers["Authorization"] = f"Bearer {TRUNAJOD_API_KEY}"
-
-    try:
-        async with httpx.AsyncClient(timeout=TRUNAJOD_TIMEOUT) as client:
-            r = await client.post(TRUNAJOD_ENDPOINT, headers=headers, json={"text": texto})
-            r.raise_for_status()
-            data = r.json()
-            if isinstance(data, dict) and "data" in data:
-                data = data["data"]
-            return {"ok": True, "data": data, "error": None}
-    except Exception as e:
-        return {"ok": False, "data": {}, "error": str(e)}
+IPIP_ITEMS = [
+    {"id": "ipip_1", "text": "Soy una persona organizada y planificada.", "factor": "CON"},
+    {"id": "ipip_2", "text": "Me preocupo por el bienestar de los demás.", "factor": "AGR"},
+    {"id": "ipip_3", "text": "Me siento cómodo/a interactuando con otras personas.", "factor": "EXT"},
+    {"id": "ipip_4", "text": "Mantengo la calma en situaciones difíciles.", "factor": "NEU"},
+    {"id": "ipip_5", "text": "Me interesa aprender cosas nuevas.", "factor": "OPE"},
+]
 
 # ============================================================
-# ÍNDICES + SCORING + REPORTE
+# FUNCIONES SIMPLIFICADAS (DEMO)
 # ============================================================
-# ⚠️ PEGAR AQUÍ, ÍNTEGROS:
-# extract_sensitive_indices
-# score_sensitive
-# generar_reporte_metasistema
+
+def extract_sensitive_indices(_data: dict) -> dict:
+    return {"dummy": 1}
+
+def score_sensitive(text: str, _indices: dict) -> dict:
+    length_score = min(len(text) // 20, 100)
+    return {
+        "global": length_score,
+        "coherencia": length_score,
+        "relevancia": length_score,
+        "registro": length_score,
+        "desarrollo": length_score,
+    }
+
+def generar_reporte_metasistema(
+    avg_scores,
+    score_func,
+    score_sit,
+    combined_global,
+    tru_ok_func=True,
+    tru_ok_sit=True,
+):
+    return {
+        "perfil_general": {
+            "global": combined_global,
+            "funcional": score_func.get("global"),
+            "situacional": score_sit.get("global"),
+        },
+        "ipip": avg_scores,
+        "mensaje": "Reporte generado correctamente (modo demo).",
+    }
 
 # ============================================================
 # HELPERS
@@ -108,10 +109,9 @@ async def submit_test(request: Request):
     form = await request.form()
     form_data = dict(form)
 
-    texto_funcional = form_data.pop("texto_funcional", "").strip()
-    texto_situacional = form_data.pop("texto_situacional", "").strip()
+    texto_funcional = form_data.pop("texto_funcional", "")
+    texto_situacional = form_data.pop("texto_situacional", "")
 
-    # ---------------- IPIP ----------------
     scores = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
     counts = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
 
@@ -128,42 +128,22 @@ async def submit_test(request: Request):
         for f in scores
     }
 
-    # ---------------- TRUNAJOD ----------------
-    tru_func = await trunajod_analyze_text(texto_funcional)
-    tru_sit = await trunajod_analyze_text(texto_situacional)
-
-    idx_func = extract_sensitive_indices(tru_func["data"]) if tru_func["ok"] else {}
-    idx_sit = extract_sensitive_indices(tru_sit["data"]) if tru_sit["ok"] else {}
-
-    score_func = score_sensitive(texto_funcional, idx_func)
-    score_sit = score_sensitive(texto_situacional, idx_sit)
-
-    fg = score_func.get("global")
-    sg = score_sit.get("global")
-    combined_global = int(round((fg + sg) / 2)) if fg and sg else fg or sg
+    score_func = score_sensitive(texto_funcional, {})
+    score_sit = score_sensitive(texto_situacional, {})
+    combined_global = int((score_func["global"] + score_sit["global"]) / 2)
 
     reporte = generar_reporte_metasistema(
         avg_scores=avg_scores,
         score_func=score_func,
         score_sit=score_sit,
         combined_global=combined_global,
-        tru_ok_func=tru_func["ok"],
-        tru_ok_sit=tru_sit["ok"],
     )
 
     result_id = str(uuid.uuid4())
 
     RESULT_STORE[result_id] = {
         "reporte": reporte,
-        "analisis_discursivo": {
-            "scores_sensibles": {
-                "funcional": score_func,
-                "situacional": score_sit,
-                "global_promedio": combined_global,
-            }
-        },
         "avg_scores": avg_scores,
-        "show_technical": SHOW_TECHNICAL,
     }
 
     return templates.TemplateResponse(
@@ -172,7 +152,7 @@ async def submit_test(request: Request):
     )
 
 # ============================================================
-# ADMIN LOGIN
+# ADMIN
 # ============================================================
 
 @app.get("/admin/login", response_class=HTMLResponse)
@@ -182,7 +162,6 @@ async def admin_login_form(request: Request):
         {"request": request, "error": None}
     )
 
-
 @app.post("/admin/login", response_class=HTMLResponse)
 async def admin_login(
     request: Request,
@@ -191,22 +170,27 @@ async def admin_login(
 ):
     if username == ADMIN_USER and password == ADMIN_PASSWORD:
         request.session["admin"] = True
-        return RedirectResponse("/admin/dashboard", status_code=302)
+        return RedirectResponse("/admin/result-list", status_code=302)
 
     return templates.TemplateResponse(
         "admin_login.html",
         {"request": request, "error": "Credenciales incorrectas"}
     )
 
+@app.get("/admin/result-list", response_class=HTMLResponse)
+async def admin_list(request: Request):
+    auth = require_admin(request)
+    if auth:
+        return auth
 
-@app.get("/admin/logout")
-async def admin_logout(request: Request):
-    request.session.clear()
-    return RedirectResponse("/admin/login", status_code=302)
-
-# ============================================================
-# ADMIN RESULT
-# ============================================================
+    return HTMLResponse(
+        "<h3>Resultados disponibles:</h3><ul>" +
+        "".join(
+            f'<li><a href="/admin/result/{rid}">{rid}</a></li>'
+            for rid in RESULT_STORE.keys()
+        ) +
+        "</ul>"
+    )
 
 @app.get("/admin/result/{result_id}", response_class=HTMLResponse)
 async def admin_result(request: Request, result_id: str):
