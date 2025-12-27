@@ -6,14 +6,21 @@ import uuid
 import os
 import io
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+# =========================================================
+# Intento de importar matplotlib (SIN BOTAR EL DEPLOY)
+# =========================================================
+MATPLOTLIB_OK = True
+try:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+except Exception:
+    MATPLOTLIB_OK = False
+    plt = None
 
 # =========================================================
 # APP BASE
 # =========================================================
-
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
@@ -25,7 +32,6 @@ app.add_middleware(
 # =========================================================
 # IPIP ITEMS (demo)
 # =========================================================
-
 IPIP_ITEMS = [
     {"id": "ipip_1", "text": "Soy una persona organizada y planificada.", "factor": "CON"},
     {"id": "ipip_2", "text": "Me preocupo por el bienestar de los demás.", "factor": "AGR"},
@@ -37,13 +43,11 @@ IPIP_ITEMS = [
 # =========================================================
 # MEMORIA SIMPLE (RAM)
 # =========================================================
-
 RESULT_STORE = {}
 
 # =========================================================
 # ACTIVADORES LINGÜÍSTICOS – TEST LABORAL 6.0
 # =========================================================
-
 ACTIVADORES = {
     "A": {
         "keywords": [
@@ -82,10 +86,6 @@ ACTIVADORES = {
     }
 }
 
-# =========================================================
-# LÓGICA 6.0
-# =========================================================
-
 def _count_matches(texto: str, keywords: list[str]) -> int:
     texto = (texto or "").lower().strip()
     if not texto:
@@ -109,10 +109,21 @@ def detectar_variante_situacional(texto_situacional: str) -> dict:
     }
 
 # =========================================================
-# GRÁFICOS (PYTHON)
+# GRÁFICOS (PYTHON) – con fallback si matplotlib no está
 # =========================================================
+def _placeholder_png(msg: str = "Gráfico no disponible (matplotlib no instalado).") -> bytes:
+    # PNG 1x1 transparente (muy liviano) como fallback.
+    # Luego lo “acompañamos” con texto en HTML si quieres.
+    return (
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+        b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDATx\x9cc``\x00"
+        b"\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
 
 def _plot_bar_png(labels, values, title: str) -> bytes:
+    if not MATPLOTLIB_OK or plt is None:
+        return _placeholder_png()
+
     fig = plt.figure(figsize=(7, 3), dpi=150)
     ax = fig.add_subplot(111)
 
@@ -121,7 +132,7 @@ def _plot_bar_png(labels, values, title: str) -> bytes:
     ax.set_ylim(0, max(values) + 0.5 if values else 1)
 
     for i, v in enumerate(values):
-        ax.text(i, v + 0.05, str(v), ha="center", va="bottom", fontsize=9)
+        ax.text(i, float(v) + 0.05, str(v), ha="center", va="bottom", fontsize=9)
 
     fig.tight_layout()
     buf = io.BytesIO()
@@ -133,17 +144,13 @@ def _plot_bar_png(labels, values, title: str) -> bytes:
 # =========================================================
 # RUTAS USUARIO
 # =========================================================
-
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/test", response_class=HTMLResponse)
 async def show_test(request: Request):
-    return templates.TemplateResponse(
-        "test.html",
-        {"request": request, "items": IPIP_ITEMS}
-    )
+    return templates.TemplateResponse("test.html", {"request": request, "items": IPIP_ITEMS})
 
 @app.post("/test", response_class=HTMLResponse)
 async def submit_test(request: Request):
@@ -168,7 +175,6 @@ async def submit_test(request: Request):
     }
 
     result_id = str(uuid.uuid4())
-
     meta_6 = detectar_variante_situacional(texto_situacional)
 
     RESULT_STORE[result_id] = {
@@ -183,13 +189,9 @@ async def submit_test(request: Request):
 # =========================================================
 # RUTAS ADMIN
 # =========================================================
-
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_list(request: Request):
-    return templates.TemplateResponse(
-        "admin_list.html",
-        {"request": request, "results": RESULT_STORE}
-    )
+    return templates.TemplateResponse("admin_list.html", {"request": request, "results": RESULT_STORE})
 
 @app.get("/admin/{result_id}", response_class=HTMLResponse)
 async def admin_detail(request: Request, result_id: str):
@@ -199,17 +201,12 @@ async def admin_detail(request: Request, result_id: str):
 
     return templates.TemplateResponse(
         "admin_detail.html",
-        {
-            "request": request,
-            "result_id": result_id,
-            "data": data
-        }
+        {"request": request, "result_id": result_id, "data": data, "matplotlib_ok": MATPLOTLIB_OK}
     )
 
 # =========================================================
 # ENDPOINTS DE IMÁGENES
 # =========================================================
-
 @app.get("/admin/{result_id}/ipip.png")
 async def admin_ipip_png(result_id: str):
     data = RESULT_STORE.get(result_id)
