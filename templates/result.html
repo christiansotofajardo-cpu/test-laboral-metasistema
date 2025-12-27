@@ -4,8 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Reporte — Test Laboral MetaSistema</title>
+
   <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 <div class="container">
 
@@ -31,17 +34,31 @@
   </div>
 
   <!-- ================================================= -->
-  <!-- PLACEHOLDER VISUAL (GRÁFICOS) -->
+  <!-- GRÁFICOS -->
   <!-- ================================================= -->
+  {% set sf = analisis_discursivo["scores_sensibles"]["funcional"] %}
+  {% set ss = analisis_discursivo["scores_sensibles"]["situacional"] %}
+  {% set sg = analisis_discursivo["scores_sensibles"]["global_promedio"] %}
+
   <div class="card">
-    <h2>Indicadores globales (visual)</h2>
-    <div class="small">
-      *En esta sección se integrarán visualizaciones del desempeño comunicativo global,
-      comparación funcional vs. situacional y perfil IPIP.*
+    <h2>Indicadores visuales de desempeño</h2>
+
+    <div class="grid-2">
+      <div>
+        <h3>Score comunicativo global</h3>
+        <canvas id="chartGlobal"></canvas>
+      </div>
+
+      <div>
+        <h3>Funcional vs. Situacional</h3>
+        <canvas id="chartTasks"></canvas>
+      </div>
     </div>
-    <div class="placeholder">
-      [ Gráficos aquí ]
-    </div>
+
+    <div class="spacer"></div>
+
+    <h3>Perfil de personalidad (IPIP-100)</h3>
+    <canvas id="chartIPIP"></canvas>
   </div>
 
   <!-- ================================================= -->
@@ -117,10 +134,6 @@
   <div class="card muted">
     <h2>Detalle técnico de apoyo</h2>
 
-    {% set sf = analisis_discursivo["scores_sensibles"]["funcional"] %}
-    {% set ss = analisis_discursivo["scores_sensibles"]["situacional"] %}
-    {% set sg = analisis_discursivo["scores_sensibles"]["global_promedio"] %}
-
     <p><b>Score comunicativo global:</b> {{ sg if sg is not none else "—" }}</p>
 
     <h3>Funcional</h3>
@@ -144,20 +157,6 @@
     </ul>
   </div>
 
-  <!-- ================================================= -->
-  <!-- IPIP NUMÉRICO -->
-  <!-- ================================================= -->
-  <div class="card muted">
-    <h2>IPIP-100 — Promedios por factor</h2>
-    <ul>
-      <li><b>Responsabilidad (CON):</b> {{ avg_scores["CON"] }}</li>
-      <li><b>Estabilidad emocional (NEU):</b> {{ avg_scores["NEU"] }}</li>
-      <li><b>Extraversión (EXT):</b> {{ avg_scores["EXT"] }}</li>
-      <li><b>Amabilidad (AGR):</b> {{ avg_scores["AGR"] }}</li>
-      <li><b>Apertura (OPE):</b> {{ avg_scores["OPE"] }}</li>
-    </ul>
-  </div>
-
   {% if show_technical %}
   <div class="card debug">
     <h2>Diagnóstico técnico (modo debug)</h2>
@@ -166,5 +165,74 @@
   {% endif %}
 
 </div>
+
+<!-- ================================================= -->
+<!-- CHART.JS SCRIPTS -->
+<!-- ================================================= -->
+<script>
+  const colorPrimary = '#2563eb';
+  const colorSecondary = '#10b981';
+  const colorMuted = '#9ca3af';
+
+  // Global
+  new Chart(document.getElementById('chartGlobal'), {
+    type: 'bar',
+    data: {
+      labels: ['Score global'],
+      datasets: [{
+        data: [{{ sg if sg is not none else 0 }}],
+        backgroundColor: colorPrimary
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: { x: { min: 0, max: 100 } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Funcional vs Situacional
+  new Chart(document.getElementById('chartTasks'), {
+    type: 'bar',
+    data: {
+      labels: ['Funcional', 'Situacional'],
+      datasets: [{
+        data: [
+          {{ sf["global"] if sf["global"] is not none else 0 }},
+          {{ ss["global"] if ss["global"] is not none else 0 }}
+        ],
+        backgroundColor: [colorPrimary, colorSecondary]
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: { x: { min: 0, max: 100 } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // IPIP
+  new Chart(document.getElementById('chartIPIP'), {
+    type: 'bar',
+    data: {
+      labels: ['CON', 'NEU', 'EXT', 'AGR', 'OPE'],
+      datasets: [{
+        data: [
+          {{ avg_scores["CON"] or 0 }},
+          {{ avg_scores["NEU"] or 0 }},
+          {{ avg_scores["EXT"] or 0 }},
+          {{ avg_scores["AGR"] or 0 }},
+          {{ avg_scores["OPE"] or 0 }}
+        ],
+        backgroundColor: colorMuted
+      }]
+    },
+    options: {
+      scales: { y: { min: 1, max: 5 } },
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+
 </body>
 </html>
