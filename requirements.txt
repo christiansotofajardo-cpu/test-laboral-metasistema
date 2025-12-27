@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-httpx
-python-multipart
-itsdangerous
 jinja2
+python-multipart
+starlette
+matplotlib
