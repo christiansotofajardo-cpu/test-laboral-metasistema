@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 from typing import Dict, Any
 import os
 import httpx
@@ -10,38 +11,40 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # ============================================================
-# MEMORIA EN EL SISTEMA (IN-MEMORY)
+# SESSION
+# ============================================================
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET", "metasistema-secret-key")
+)
+
+# ============================================================
+# MEMORIA EN EL SISTEMA
 # ============================================================
 
 RESULT_STORE: Dict[str, Dict[str, Any]] = {}
 
 # ============================================================
-# CONFIGURACIÓN
+# CONFIG
 # ============================================================
 
 TRUNAJOD_ENDPOINT = os.getenv("TRUNAJOD_ENDPOINT", "").strip()
 TRUNAJOD_API_KEY = os.getenv("TRUNAJOD_API_KEY", "").strip()
 TRUNAJOD_TIMEOUT = float(os.getenv("TRUNAJOD_TIMEOUT", "25"))
 
+ADMIN_USER = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
+
 SHOW_TECHNICAL = os.getenv("SHOW_TECHNICAL", "0") in ("1", "true", "True")
 
-CONSIGNA_FUNCIONAL = (
-    "Imagina que te incorporas a una organización. "
-    "Describe qué tipo de aporte profesional realizas habitualmente."
-)
-
-CONSIGNA_SITUACIONAL = (
-    "Piensa en una situación laboral compleja o desafiante. "
-    "Describe cómo la enfrentarías y qué harías para resolverla."
-)
+# ============================================================
+# IPIP_ITEMS
+# ============================================================
+# ⚠️ PEGAR AQUÍ TU IPIP_ITEMS ORIGINAL (SIN CAMBIOS)
 
 # ============================================================
-# IPIP_ITEMS  (COPIAR ÍNTEGRO DESDE TU VERSIÓN ORIGINAL)
-# ============================================================
-# IPIP_ITEMS = [...]
-
-# ============================================================
-# TRUNAJOD CLIENT (IGUAL QUE ANTES)
+# TRUNAJOD CLIENT
 # ============================================================
 
 async def trunajod_analyze_text(texto: str) -> dict:
@@ -69,15 +72,22 @@ async def trunajod_analyze_text(texto: str) -> dict:
 
 # ============================================================
 # ÍNDICES + SCORING + REPORTE
-# (COPIAR ÍNTEGROS DESDE TU VERSIÓN ORIGINAL)
+# ============================================================
+# ⚠️ PEGAR AQUÍ, ÍNTEGROS:
+# extract_sensitive_indices
+# score_sensitive
+# generar_reporte_metasistema
+
+# ============================================================
+# HELPERS
 # ============================================================
 
-# extract_sensitive_indices(...)
-# score_sensitive(...)
-# generar_reporte_metasistema(...)
+def require_admin(request: Request):
+    if not request.session.get("admin"):
+        return RedirectResponse("/admin/login", status_code=302)
 
 # ============================================================
-# RUTAS
+# ROUTES
 # ============================================================
 
 @app.get("/", response_class=HTMLResponse)
@@ -89,12 +99,7 @@ async def index(request: Request):
 async def show_test(request: Request):
     return templates.TemplateResponse(
         "test.html",
-        {
-            "request": request,
-            "items": IPIP_ITEMS,
-            "consigna_funcional": CONSIGNA_FUNCIONAL,
-            "consigna_situacional": CONSIGNA_SITUACIONAL,
-        },
+        {"request": request, "items": IPIP_ITEMS}
     )
 
 
@@ -106,9 +111,7 @@ async def submit_test(request: Request):
     texto_funcional = form_data.pop("texto_funcional", "").strip()
     texto_situacional = form_data.pop("texto_situacional", "").strip()
 
-    # -------------------------------
-    # IPIP SCORING (IGUAL QUE ANTES)
-    # -------------------------------
+    # ---------------- IPIP ----------------
     scores = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
     counts = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
 
@@ -125,9 +128,7 @@ async def submit_test(request: Request):
         for f in scores
     }
 
-    # -------------------------------
-    # TRUNAJOD + ÍNDICES
-    # -------------------------------
+    # ---------------- TRUNAJOD ----------------
     tru_func = await trunajod_analyze_text(texto_funcional)
     tru_sit = await trunajod_analyze_text(texto_situacional)
 
@@ -141,9 +142,6 @@ async def submit_test(request: Request):
     sg = score_sit.get("global")
     combined_global = int(round((fg + sg) / 2)) if fg and sg else fg or sg
 
-    # -------------------------------
-    # REPORTE METASISTEMA
-    # -------------------------------
     reporte = generar_reporte_metasistema(
         avg_scores=avg_scores,
         score_func=score_func,
@@ -156,7 +154,6 @@ async def submit_test(request: Request):
     result_id = str(uuid.uuid4())
 
     RESULT_STORE[result_id] = {
-        "request": request,
         "reporte": reporte,
         "analisis_discursivo": {
             "scores_sensibles": {
@@ -169,19 +166,54 @@ async def submit_test(request: Request):
         "show_technical": SHOW_TECHNICAL,
     }
 
-    # USUARIO NO VE RESULTADOS
     return templates.TemplateResponse(
         "submitted.html",
         {"request": request}
     )
 
+# ============================================================
+# ADMIN LOGIN
+# ============================================================
+
+@app.get("/admin/login", response_class=HTMLResponse)
+async def admin_login_form(request: Request):
+    return templates.TemplateResponse(
+        "admin_login.html",
+        {"request": request, "error": None}
+    )
+
+
+@app.post("/admin/login", response_class=HTMLResponse)
+async def admin_login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+    if username == ADMIN_USER and password == ADMIN_PASSWORD:
+        request.session["admin"] = True
+        return RedirectResponse("/admin/dashboard", status_code=302)
+
+    return templates.TemplateResponse(
+        "admin_login.html",
+        {"request": request, "error": "Credenciales incorrectas"}
+    )
+
+
+@app.get("/admin/logout")
+async def admin_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/admin/login", status_code=302)
 
 # ============================================================
-# ADMIN — VER RESULTADOS
+# ADMIN RESULT
 # ============================================================
 
 @app.get("/admin/result/{result_id}", response_class=HTMLResponse)
 async def admin_result(request: Request, result_id: str):
+    auth = require_admin(request)
+    if auth:
+        return auth
+
     data = RESULT_STORE.get(result_id)
     if not data:
         return HTMLResponse("<h3>Resultado no encontrado</h3>", status_code=404)
