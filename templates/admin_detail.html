@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Detalle evaluación</title>
+</head>
+<body>
+
+<h1>Detalle de evaluación</h1>
+
+<h2>IPIP – Promedios</h2>
+<ul>
+    {% for k, v in data.avg_scores.items() %}
+        <li>{{ k }}: {{ v }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Texto funcional</h2>
+<p style="white-space: pre-wrap;">
+    {{ data.texto_funcional }}
+</p>
+
+<h2>Texto situacional</h2>
+<p style="white-space: pre-wrap;">
+    {{ data.texto_situacional }}
+</p>
+
+<p>
+    <a href="/admin">← Volver al listado</a>
+</p>
+
+</body>
+</html>
