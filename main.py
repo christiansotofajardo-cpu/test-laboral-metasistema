@@ -1,40 +1,21 @@
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
-from typing import Dict, Any
-import os
 import uuid
+import os
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# ============================================================
-# SESSION
-# ============================================================
-
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET", "metasistema-secret-key")
+    secret_key=os.getenv("SESSION_SECRET", "metasistema-secret")
 )
 
-# ============================================================
-# MEMORIA EN EL SISTEMA
-# ============================================================
-
-RESULT_STORE: Dict[str, Dict[str, Any]] = {}
-
-# ============================================================
-# CONFIG
-# ============================================================
-
-ADMIN_USER = os.getenv("ADMIN_USER", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
-
-# ============================================================
-# IPIP ITEMS (DEMO FUNCIONAL)
-# 👉 Puedes reemplazar esta lista por el IPIP-100 completo cuando quieras
-# ============================================================
+# =========================================================
+# IPIP ITEMS (demo)
+# =========================================================
 
 IPIP_ITEMS = [
     {"id": "ipip_1", "text": "Soy una persona organizada y planificada.", "factor": "CON"},
@@ -44,52 +25,15 @@ IPIP_ITEMS = [
     {"id": "ipip_5", "text": "Me interesa aprender cosas nuevas.", "factor": "OPE"},
 ]
 
-# ============================================================
-# FUNCIONES SIMPLIFICADAS (DEMO)
-# ============================================================
+# =========================================================
+# MEMORIA SIMPLE (EN RAM)
+# =========================================================
 
-def extract_sensitive_indices(_data: dict) -> dict:
-    return {"dummy": 1}
+RESULT_STORE = {}
 
-def score_sensitive(text: str, _indices: dict) -> dict:
-    length_score = min(len(text) // 20, 100)
-    return {
-        "global": length_score,
-        "coherencia": length_score,
-        "relevancia": length_score,
-        "registro": length_score,
-        "desarrollo": length_score,
-    }
-
-def generar_reporte_metasistema(
-    avg_scores,
-    score_func,
-    score_sit,
-    combined_global,
-    tru_ok_func=True,
-    tru_ok_sit=True,
-):
-    return {
-        "perfil_general": {
-            "global": combined_global,
-            "funcional": score_func.get("global"),
-            "situacional": score_sit.get("global"),
-        },
-        "ipip": avg_scores,
-        "mensaje": "Reporte generado correctamente (modo demo).",
-    }
-
-# ============================================================
-# HELPERS
-# ============================================================
-
-def require_admin(request: Request):
-    if not request.session.get("admin"):
-        return RedirectResponse("/admin/login", status_code=302)
-
-# ============================================================
-# ROUTES
-# ============================================================
+# =========================================================
+# RUTAS USUARIO
+# =========================================================
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -107,43 +51,31 @@ async def show_test(request: Request):
 @app.post("/test", response_class=HTMLResponse)
 async def submit_test(request: Request):
     form = await request.form()
-    form_data = dict(form)
+    data = dict(form)
 
-    texto_funcional = form_data.pop("texto_funcional", "")
-    texto_situacional = form_data.pop("texto_situacional", "")
+    texto_funcional = data.pop("texto_funcional", "")
+    texto_situacional = data.pop("texto_situacional", "")
 
-    scores = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
-    counts = {"NEU": 0, "CON": 0, "OPE": 0, "AGR": 0, "EXT": 0}
+    scores = {"CON": 0, "AGR": 0, "EXT": 0, "NEU": 0, "OPE": 0}
+    counts = {"CON": 0, "AGR": 0, "EXT": 0, "NEU": 0, "OPE": 0}
 
     for item in IPIP_ITEMS:
-        iid = item["id"]
-        factor = item["factor"]
-        if iid in form_data and form_data[iid]:
-            val = int(form_data[iid])
-            scores[factor] += val
-            counts[factor] += 1
+        if item["id"] in data:
+            val = int(data[item["id"]])
+            scores[item["factor"]] += val
+            counts[item["factor"]] += 1
 
     avg_scores = {
-        f: round(scores[f] / counts[f], 2) if counts[f] > 0 else None
-        for f in scores
+        k: round(scores[k] / counts[k], 2) if counts[k] else None
+        for k in scores
     }
-
-    score_func = score_sensitive(texto_funcional, {})
-    score_sit = score_sensitive(texto_situacional, {})
-    combined_global = int((score_func["global"] + score_sit["global"]) / 2)
-
-    reporte = generar_reporte_metasistema(
-        avg_scores=avg_scores,
-        score_func=score_func,
-        score_sit=score_sit,
-        combined_global=combined_global,
-    )
 
     result_id = str(uuid.uuid4())
 
     RESULT_STORE[result_id] = {
-        "reporte": reporte,
         "avg_scores": avg_scores,
+        "texto_funcional": texto_funcional,
+        "texto_situacional": texto_situacional,
     }
 
     return templates.TemplateResponse(
@@ -151,56 +83,33 @@ async def submit_test(request: Request):
         {"request": request}
     )
 
-# ============================================================
-# ADMIN
-# ============================================================
+# =========================================================
+# RUTAS ADMIN (VERSIÓN 0)
+# =========================================================
 
-@app.get("/admin/login", response_class=HTMLResponse)
-async def admin_login_form(request: Request):
-    return templates.TemplateResponse(
-        "admin_login.html",
-        {"request": request, "error": None}
-    )
-
-@app.post("/admin/login", response_class=HTMLResponse)
-async def admin_login(
-    request: Request,
-    username: str = Form(...),
-    password: str = Form(...)
-):
-    if username == ADMIN_USER and password == ADMIN_PASSWORD:
-        request.session["admin"] = True
-        return RedirectResponse("/admin/result-list", status_code=302)
-
-    return templates.TemplateResponse(
-        "admin_login.html",
-        {"request": request, "error": "Credenciales incorrectas"}
-    )
-
-@app.get("/admin/result-list", response_class=HTMLResponse)
+@app.get("/admin", response_class=HTMLResponse)
 async def admin_list(request: Request):
-    auth = require_admin(request)
-    if auth:
-        return auth
-
-    return HTMLResponse(
-        "<h3>Resultados disponibles:</h3><ul>" +
-        "".join(
-            f'<li><a href="/admin/result/{rid}">{rid}</a></li>'
-            for rid in RESULT_STORE.keys()
-        ) +
-        "</ul>"
+    return templates.TemplateResponse(
+        "admin_list.html",
+        {
+            "request": request,
+            "results": RESULT_STORE
+        }
     )
 
-@app.get("/admin/result/{result_id}", response_class=HTMLResponse)
-async def admin_result(request: Request, result_id: str):
-    auth = require_admin(request)
-    if auth:
-        return auth
 
+@app.get("/admin/{result_id}", response_class=HTMLResponse)
+async def admin_detail(request: Request, result_id: str):
     data = RESULT_STORE.get(result_id)
-    if not data:
-        return HTMLResponse("<h3>Resultado no encontrado</h3>", status_code=404)
 
-    data["request"] = request
-    return templates.TemplateResponse("result.html", data)
+    if not data:
+        return HTMLResponse("Evaluación no encontrada", status_code=404)
+
+    return templates.TemplateResponse(
+        "admin_detail.html",
+        {
+            "request": request,
+            "result_id": result_id,
+            "data": data
+        }
+    )
