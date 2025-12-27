@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Evaluaciones</title>
+</head>
+<body>
+
+<h1>Evaluaciones recibidas</h1>
+
+<ul>
+    {% for key in results.keys() %}
+        <li>
+            <a href="/admin/{{ key }}">Evaluación {{ loop.index }}</a>
+        </li>
+    {% else %}
+        <li>No hay evaluaciones aún.</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>
