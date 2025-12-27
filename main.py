@@ -1,9 +1,13 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import uuid
 import os
+
+# =========================================================
+# APP BASE
+# =========================================================
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -26,10 +30,81 @@ IPIP_ITEMS = [
 ]
 
 # =========================================================
-# MEMORIA SIMPLE (EN RAM)
+# MEMORIA SIMPLE (RAM)
 # =========================================================
 
 RESULT_STORE = {}
+
+# =========================================================
+# ACTIVADORES LINGÜÍSTICOS – TEST LABORAL 6.0
+# (solo tarea situacional)
+# =========================================================
+
+ACTIVADORES = {
+    "A": {
+        "keywords": [
+            "yo", "resuelvo", "resolv", "actúo", "actuo", "actuar",
+            "decido", "ejecuto", "me hago cargo", "me encargo",
+            "soluciono", "lo hago"
+        ],
+        "explicacion": (
+            "El texto muestra una estrategia comunicativa centrada en la acción directa "
+            "y la iniciativa personal como principal vía de resolución de la situación planteada."
+        )
+    },
+    "B": {
+        "keywords": [
+            "jefe", "supervisor", "encargado", "informo", "consulto",
+            "derivo", "escalo", "protocolo", "procedimiento",
+            "normativa", "reglamento", "reporto", "rrhh",
+            "recursos humanos"
+        ],
+        "explicacion": (
+            "El texto muestra una estrategia comunicativa orientada a la derivación jerárquica "
+            "y al uso de la estructura organizacional como principal recurso para abordar la situación."
+        )
+    },
+    "C": {
+        "keywords": [
+            "equipo", "personas", "converso", "conversar", "dialogo",
+            "diálogo", "apoyo", "apoyar", "escucho", "escuchar",
+            "mediar", "contener", "clima", "emocional",
+            "acuerdo", "vínculo", "vinculo"
+        ],
+        "explicacion": (
+            "El texto muestra una estrategia comunicativa centrada en el vínculo interpersonal "
+            "y el cuidado del clima relacional como forma principal de abordar la situación planteada."
+        )
+    }
+}
+
+def _count_matches(texto: str, keywords: list[str]) -> int:
+    texto = (texto or "").lower().strip()
+    if not texto:
+        return 0
+    return sum(1 for kw in keywords if kw in texto)
+
+def detectar_variante_situacional(texto_situacional: str) -> dict:
+    """
+    Selección dinámica MEDIO–A / MEDIO–B / MEDIO–C
+    basada en activadores lingüísticos simples.
+    """
+    conteos = {
+        k: _count_matches(texto_situacional, v["keywords"])
+        for k, v in ACTIVADORES.items()
+    }
+
+    variante_key = max(conteos, key=conteos.get)
+
+    # fallback ético: si no hay activadores claros
+    if conteos[variante_key] == 0:
+        variante_key = "B"
+
+    return {
+        "variante": f"MEDIO–{variante_key}",
+        "explicacion": ACTIVADORES[variante_key]["explicacion"],
+        "conteos": conteos
+    }
 
 # =========================================================
 # RUTAS USUARIO
@@ -72,10 +147,13 @@ async def submit_test(request: Request):
 
     result_id = str(uuid.uuid4())
 
+    meta_6 = detectar_variante_situacional(texto_situacional)
+
     RESULT_STORE[result_id] = {
         "avg_scores": avg_scores,
         "texto_funcional": texto_funcional,
         "texto_situacional": texto_situacional,
+        "meta_6": meta_6
     }
 
     return templates.TemplateResponse(
@@ -84,17 +162,14 @@ async def submit_test(request: Request):
     )
 
 # =========================================================
-# RUTAS ADMIN (VERSIÓN 0)
+# RUTAS ADMIN
 # =========================================================
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_list(request: Request):
     return templates.TemplateResponse(
         "admin_list.html",
-        {
-            "request": request,
-            "results": RESULT_STORE
-        }
+        {"request": request, "results": RESULT_STORE}
     )
 
 
@@ -105,6 +180,12 @@ async def admin_detail(request: Request, result_id: str):
     if not data:
         return HTMLResponse("Evaluación no encontrada", status_code=404)
 
+    # robustez: recalcular si no existe
+    if "meta_6" not in data:
+        data["meta_6"] = detectar_variante_situacional(
+            data.get("texto_situacional", "")
+        )
+
     return templates.TemplateResponse(
         "admin_detail.html",
         {
@@ -113,3 +194,4 @@ async def admin_detail(request: Request, result_id: str):
             "data": data
         }
     )
+
