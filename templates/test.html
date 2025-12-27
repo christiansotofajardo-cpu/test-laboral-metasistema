@@ -1,104 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Laboral MetaSistema</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Test</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:40px;max-width:980px}
+    .card{border:1px solid #ddd;border-radius:12px;padding:18px;margin:14px 0}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    textarea{width:100%;min-height:120px;border:1px solid #aaa;border-radius:10px;padding:10px}
+    select{border:1px solid #aaa;border-radius:10px;padding:6px}
+    button{padding:10px 14px;border:1px solid #111;border-radius:10px;background:#fff;cursor:pointer}
+    .muted{color:#666}
+    .q{margin:10px 0}
+    .q label{display:block;margin-bottom:6px}
+  </style>
 </head>
-
 <body>
-  <div class="container">
+  <h1>Evaluación</h1>
+  <p class="muted">Responde el autorreporte y luego escribe ambas tareas.</p>
 
-    <h1>Test Laboral MetaSistema</h1>
-    <p class="small">Cuestionario de personalidad y tareas de comunicación laboral</p>
-
+  <form method="post" action="/test">
     <div class="card">
-      <p class="small">
-        Este instrumento tiene como objetivo comprender tu forma habitual de actuar y comunicarte en contextos laborales.
-        No existen respuestas correctas o incorrectas. Responde de manera honesta y espontánea.
-      </p>
+      <h2>Autorreporte (IPIP breve)</h2>
+      {% for item in items %}
+        <div class="q">
+          <label for="{{ item.id }}">{{ item.text }}</label>
+          <select name="{{ item.id }}" id="{{ item.id }}" required>
+            <option value="">Selecciona</option>
+            <option value="1">1 Muy en desacuerdo</option>
+            <option value="2">2 En desacuerdo</option>
+            <option value="3">3 Neutral</option>
+            <option value="4">4 De acuerdo</option>
+            <option value="5">5 Muy de acuerdo</option>
+          </select>
+        </div>
+      {% endfor %}
     </div>
 
-    <form method="post">
+    <div class="card">
+      <h2>Producción escrita – Tarea funcional</h2>
+      <p class="muted">Describe cómo organizas y ejecutas una tarea laboral (pasos, prioridades, gestión).</p>
+      <textarea name="texto_funcional" required></textarea>
+    </div>
 
-      <!-- ================================================= -->
-      <!-- PARTE 1: IPIP -->
-      <!-- ================================================= -->
-      <div class="card">
-        <h2>Parte 1 – Cuestionario de personalidad</h2>
-        <p class="small">
-          A continuación encontrarás una serie de afirmaciones. Indica en qué medida estás de acuerdo con cada una,
-          pensando en tu comportamiento habitual en contextos de trabajo.
-        </p>
-      </div>
+    <div class="card">
+      <h2>Producción escrita – Tarea situacional</h2>
+      <p class="muted">Describe cómo actuarías ante una situación compleja (conflicto, presión, error, coordinación).</p>
+      <textarea name="texto_situacional" required></textarea>
+    </div>
 
-      {% for item in items %}
-      <div class="card">
-        <p><b>{{ loop.index }}. {{ item.text }}</b></p>
-        <select name="{{ item.id }}" required>
-          <option value="">Selecciona una opción</option>
-          <option value="1">Muy en desacuerdo</option>
-          <option value="2">En desacuerdo</option>
-          <option value="3">Neutral</option>
-          <option value="4">De acuerdo</option>
-          <option value="5">Muy de acuerdo</option>
-        </select>
-      </div>
-      {% endfor %}
-
-      <!-- ================================================= -->
-      <!-- PARTE 2: APORTE PROFESIONAL -->
-      <!-- ================================================= -->
-      <div class="card">
-        <h2>Parte 2 – Aporte profesional</h2>
-        <p class="small">
-          Imagina que te incorporas a una organización o equipo de trabajo.
-          Describe qué tipo de aporte profesional realizas habitualmente y en qué aspectos consideras que contribuyes más.
-        </p>
-        <p class="small muted">
-          Puedes referirte a tu forma de trabajar, de comunicarte, de resolver tareas o de relacionarte con otros.
-        </p>
-        <textarea
-          name="texto_funcional"
-          rows="8"
-          style="width:100%;"
-          placeholder="Escribe tu respuesta aquí..."
-          required></textarea>
-      </div>
-
-      <!-- ================================================= -->
-      <!-- PARTE 3: SITUACIÓN LABORAL -->
-      <!-- ================================================= -->
-      <div class="card">
-        <h2>Parte 3 – Resolución de una situación laboral</h2>
-        <p class="small">
-          A continuación, piensa en una situación laboral compleja o desafiante.
-          Puede tratarse de un problema con un equipo, una diferencia de opiniones, una dificultad operativa
-          o una situación inesperada.
-        </p>
-        <p class="small muted">
-          Describe cómo enfrentarías esa situación y qué harías para resolverla.
-        </p>
-        <textarea
-          name="texto_situacional"
-          rows="8"
-          style="width:100%;"
-          placeholder="Escribe tu respuesta aquí..."
-          required></textarea>
-      </div>
-
-      <!-- ================================================= -->
-      <!-- ENVÍO -->
-      <!-- ================================================= -->
-      <div class="card center">
-        <button type="submit">Enviar evaluación</button>
-        <p class="small muted">
-          Tus respuestas serán analizadas de manera confidencial.
-        </p>
-      </div>
-
-    </form>
-
-  </div>
+    <button type="submit">Enviar</button>
+  </form>
 </body>
 </html>
