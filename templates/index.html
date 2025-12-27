@@ -1,23 +1,25 @@
-{% extends "base.html" %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Test Laboral MetaSistema</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:40px;max-width:900px}
+    a{color:inherit}
+    .card{border:1px solid #ddd;border-radius:12px;padding:18px;margin-top:18px}
+    .btn{display:inline-block;padding:10px 14px;border:1px solid #111;border-radius:10px;text-decoration:none}
+    .muted{color:#666}
+  </style>
+</head>
+<body>
+  <h1>Test Laboral MetaSistema</h1>
+  <p class="muted">Evaluación orientada a evidencias discursivas y autorreporte. Sin scoring duro ni etiquetado personal.</p>
 
-{% block content %}
-<h2>Bienvenido/a al Test Laboral MetaSistema</h2>
+  <div class="card">
+    <p><a class="btn" href="/test">Comenzar evaluación</a></p>
+    <p class="muted">Si eres administrador: <a href="/admin">ver panel</a></p>
+  </div>
+</body>
+</html>
 
-<p>
-Este instrumento evalúa rasgos de personalidad relevantes en el contexto laboral
-(usando el modelo Big Five, IPIP-100) y dos breves tareas de escritura que permiten
-observar tu estilo comunicativo y reflexivo.
-</p>
-
-<div class="card">
-    <h3>Componentes evaluados</h3>
-    <ul>
-        <li>Cuestionario IPIP-100 (Big Five ampliado)</li>
-        <li>Tarea discursiva funcional (correo laboral)</li>
-        <li>Tarea discursiva situacional (resolución de conflicto)</li>
-    </ul>
-    <p>Duración estimada total: <strong>10–15 minutos.</strong></p>
-</div>
-
-<a href="/test" class="btn btn-primary">Comenzar evaluación</a>
-{% endblock %}
