@@ -7,6 +7,12 @@ import os
 import io
 
 # =========================================================
+# PDF EXPORT (ADD-ON)
+# =========================================================
+from weasyprint import HTML
+from jinja2 import Environment, FileSystemLoader
+
+# =========================================================
 # Intento seguro de matplotlib (no botar deploy)
 # =========================================================
 MATPLOTLIB_OK = True
@@ -236,3 +242,32 @@ async def admin_activadores_png(result_id: str):
     values = [conteos.get(k, 0) for k in labels]
     png = _plot_bar_png(labels, values, "Activadores discursivos (tarea situacional)")
     return Response(content=png, media_type="image/png")
+
+# =========================================================
+# EXPORT PDF (ADD-ON FINAL)
+# =========================================================
+@app.get("/admin/{result_id}/pdf")
+async def admin_pdf(request: Request, result_id: str):
+    data = RESULT_STORE.get(result_id)
+    if not data:
+        return Response("Evaluación no encontrada", status_code=404)
+
+    env = Environment(loader=FileSystemLoader("templates"))
+    template = env.get_template("admin_detail.html")
+
+    html_content = template.render(
+        request=request,
+        result_id=result_id,
+        data=data,
+        matplotlib_ok=MATPLOTLIB_OK
+    )
+
+    pdf = HTML(string=html_content).write_pdf()
+
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename=\"reporte_{result_id}.pdf\"'
+        }
+    )
