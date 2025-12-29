@@ -174,9 +174,33 @@
 
       <h3>Variante interpretativa MetaSistema (6.0)</h3>
       <span class="badge">{{ data.meta_6.variante }}</span>
-      <p class="muted" style="margin-top:10px;">{{ data.meta_6.explicacion }}</p>
+      <p class="muted" style="margin-top:10px;">
+        {{ data.meta_6.explicacion }}
+      </p>
 
       <div class="section-divider"></div>
+
+      <!-- CRITERIOS INTERPRETATIVOS -->
+      <h3>Criterios interpretativos aplicados</h3>
+      <p class="muted">
+        La selección de variante se basa exclusivamente en activadores lingüísticos
+        simples y observables en la tarea situacional, sin inferencia de rasgos personales.
+      </p>
+
+      <!-- DEFINICIÓN DE ACTIVADORES -->
+      <h3>Definición de activadores lingüísticos</h3>
+      <p class="muted">
+        <strong>A — Acción directa:</strong> el evaluado se posiciona como agente principal de resolución,
+        describiendo acciones propias frente a la situación.<br>
+        <strong>B — Derivación jerárquica:</strong> el evaluado recurre a una figura de autoridad
+        o a la estructura organizacional como principal estrategia de resolución.<br>
+        <strong>C — Foco relacional:</strong> el evaluado prioriza la mantención del vínculo,
+        la negociación o el clima interpersonal como eje de la acción.
+      </p>
+      <p class="note">
+        Los activadores se identifican a partir del contenido explícito del texto,
+        sin inferencias sobre rasgos personales.
+      </p>
 
       <div class="grid-2">
         <div>
@@ -186,9 +210,6 @@
             <li><strong>B — Derivación jerárquica:</strong> {{ data.meta_6.conteos.B }}</li>
             <li><strong>C — Foco relacional:</strong> {{ data.meta_6.conteos.C }}</li>
           </ul>
-          <p class="note">
-            Conteo simple de activadores lingüísticos observables en la tarea situacional.
-          </p>
         </div>
 
         <div>
@@ -197,7 +218,7 @@
             {% if matplotlib_ok %}
               <img src="/admin/{{ result_id }}/activadores.png" alt="Activadores discursivos">
             {% else %}
-              <p class="muted">Gráfico no disponible (matplotlib no instalado).</p>
+              <p class="muted">Gráfico no disponible.</p>
             {% endif %}
           </div>
         </div>
@@ -207,18 +228,23 @@
       <pre>{{ data.texto_situacional }}</pre>
     </div>
 
-    <!-- CRITERIOS -->
-    <div class="card">
-      <h2>Criterios interpretativos aplicados</h2>
-      <p class="muted">
-        La selección de variante se basa exclusivamente en activadores lingüísticos
-        simples y observables en la tarea situacional, sin inferencia de rasgos personales.
-      </p>
-    </div>
-
     <!-- IPIP -->
     <div class="card">
       <h2>Perfil IPIP contextualizado</h2>
+
+      <p class="muted">
+        <strong>CON</strong>: Responsabilidad / Organización<br>
+        <strong>AGR</strong>: Amabilidad / Orientación a otros<br>
+        <strong>EXT</strong>: Extraversión / Expresión social<br>
+        <strong>NEU</strong>: Estabilidad emocional (valores más bajos indican mayor estabilidad)<br>
+        <strong>OPE</strong>: Apertura a la experiencia / Flexibilidad cognitiva
+      </p>
+
+      <p class="note">
+        Escala de respuesta: 1 (Muy en desacuerdo) a 5 (Muy de acuerdo).
+        Los valores corresponden a promedios por factor y no constituyen diagnóstico
+        ni clasificación individual.
+      </p>
 
       <div class="grid-2">
         <div>
@@ -229,14 +255,13 @@
             <li><strong>NEU:</strong> {{ data.avg_scores.NEU }}</li>
             <li><strong>OPE:</strong> {{ data.avg_scores.OPE }}</li>
           </ul>
-          <p class="note">Promedios por factor (autorreporte).</p>
         </div>
 
         <div class="chart">
           {% if matplotlib_ok %}
-            <img src="/admin/{{ result_id }}/ipip.png" alt="IPIP por factor">
+            <img src="/admin/{{ result_id }}/ipip.png" alt="Perfil IPIP">
           {% else %}
-            <p class="muted">Gráfico no disponible (matplotlib no instalado).</p>
+            <p class="muted">Gráfico no disponible.</p>
           {% endif %}
         </div>
       </div>
@@ -248,8 +273,14 @@
       <p class="muted">
         Reporte consistente, explicable y trazable, alineado con el marco ético del MetaSistema.
       </p>
+      <p class="note">
+        Este reporte forma parte del <strong>MetaSistema</strong>, un marco de análisis orientado a la
+        interpretación explicable de evidencias discursivas en contexto, sin scoring duro
+        ni etiquetado personal.
+      </p>
     </div>
 
   </div>
 </body>
 </html>
+
